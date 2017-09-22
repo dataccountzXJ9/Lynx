@@ -21,14 +21,7 @@ namespace Lynx.Modules
         [Command("settings")]
         public async Task GuildSettingsAsync()
         {
-            try
-            {
-                await Context.Channel.SendMessageAsync("", embed: EmbedMethods.ShowSettingsEmbed(Context.Guild as SocketGuild).Build());
-            }
-            catch(Exception e)
-            {
-                await Context.Channel.SendMessageAsync(e.Message);
-            }
+            await Context.Channel.SendMessageAsync("", embed: EmbedMethods.ShowSettingsEmbed(Context.Guild as SocketGuild).Build());
         }
         [Command("prefix")]
         public async Task ChangeGuildPrefix(string Prefix)
@@ -120,10 +113,6 @@ namespace Lynx.Modules
     [RequireUserPermission(GuildPermission.ManageGuild), RequireBotPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
     public class Events : ModuleBase
     {
-        public enum Channel
-        {
-            Channel,
-        }
         [Command()]
         public async Task ToggleLog(IChannel channel = null)
         {

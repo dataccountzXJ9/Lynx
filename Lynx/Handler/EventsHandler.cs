@@ -20,7 +20,9 @@ namespace Lynx.Handler
         CommandService commands;
         DiscordSocketClient Client;
         public bool Banned = false;
-        public bool Left = false;
+     //   public bool Kicked = false;
+     //   public bool Unmuted = false;
+     //   public bool Muted = false;
         public EventsHandler(IServiceProvider Prov)
         {
             provider = Prov;
@@ -50,7 +52,7 @@ namespace Lynx.Handler
             Client.RoleUpdated += OnRoleUpdated;
             Client.Ready += async () =>
             {
-                Moderator.RemoveUser(Client);
+                Services.Mute.Extensions.RemoveUser(Client);
                 await Task.CompletedTask;
             };
         }

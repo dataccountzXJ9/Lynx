@@ -16,7 +16,6 @@ namespace Lynx.Modules
     public class Information : ModuleBase
     {
         CommandService _service;
-        public static IEmote Anger = new Emoji("💢");
         public Information(CommandService service)
         {
             _service = service;
