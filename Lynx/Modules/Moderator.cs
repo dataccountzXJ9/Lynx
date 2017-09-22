@@ -18,8 +18,25 @@ namespace Lynx.Modules
     public class Moderator : ModuleBase
     {
         OverwritePermissions MutePermissions = new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny);
+        [Command("unmute")]
+        public async Task UnmuteAsync(IUser User)
+        {
+            var Config = Context.Guild.LoadServerConfig();
+            if (Context.Client.LoadMuteList().MuteList.ContainsKey(User.Id.ToString()))
+            {
+                IRole MuteRole = Context.Guild.GetRole(Convert.ToUInt64(Config.Moderation.MuteRoleID)) as IRole;
+                await Context.Client.UpdateMuteList(User, null, UpdateHandler.MuteOption.Unmute);
+                await (User as SocketGuildUser).RemoveRoleAsync(MuteRole);
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**{User}** has been **unmuted** from and text chat.").Build());
+                return;
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**{User}** is not muted.").Build());
+            }
+        }
         [Command("mute")]
-        public async Task MuteAsync(IUser User, int value, string time, [Remainder] string reason = "No reason has been provided.")
+        public async Task MuteAsync(IUser User, int value = 1, string time = "hour", [Remainder] string reason = "No reason has been provided.")
         {
             var UnmuteTime = Services.Mute.Extensions.GetTime(value, time);
             var Config = Context.Guild.LoadServerConfig();
