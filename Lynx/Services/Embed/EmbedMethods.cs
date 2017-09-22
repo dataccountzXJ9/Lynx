@@ -21,12 +21,10 @@ namespace Lynx.Services.Embed
         public static EmbedBuilder ShowSettingsEmbed(SocketGuild Guild)
         {
             var embed = new EmbedBuilder();
-            try
-            {
                 var Config = Guild.LoadServerConfig();
                 ITextChannel JoinChannel = Guild.GetJoinLogChannel();
                 ITextChannel LeaveChannel = Guild.GetLeaveLogChannel();
-                ITextChannel LogChnl = Guild.GetLogChannel();
+                ITextChannel LogChnl = Guild.GetLogChannel();            
                 var LogState = Config.Events.LogState == true ? $"Enabled in {LogChnl.Mention}" : "Disabled";
                 var JoinState = Config.Events.Join.IsEnabled == true ? $"Enabled in {JoinChannel.Mention}" : "Disabled";
                 var LeaveState = Config.Events.Leave.IsEnabled == true ? $"Enabled in {LeaveChannel.Mention}" : "Disabled";
@@ -43,6 +41,7 @@ namespace Lynx.Services.Embed
                 var RLUpdatedState = Config.Events.RoleUpdate & Config.Events.LogState == true ? $"Enabled" : "Disabled";
                 var RLDeletedState = Config.Events.RoleDelete & Config.Events.LogState == true ? $"Enabled" : "Disabled";
                 var NSFWState = Config.Events.NSFWWarning & Config.Events.LogState == true ? $"Enabled" : "Disabled";
+                var DebugMode = Guild.LoadBotConfig().Debug == true ? $"Enabled" : "Disabled";
                 var LogChannel = Config.Events.LogChannel != "0" ? (Guild.GetTextChannel(Convert.ToUInt64(Config.Events.LogChannel)) as SocketTextChannel).Mention : "No log channel set.";
                 embed.AddField(x =>
                 {
@@ -65,14 +64,10 @@ namespace Lynx.Services.Embed
                     $"**Channel Created Logs: **" + CHCreatedState + "\n" +
                     $"**Channel Deleted Logs Logs: **" + CHDeletedState + "\n" +
                     $"**Channel Updated Logs: **" + CHDUpdatedState + "\n" +
-                    $"**NSFW Warning Logs: **" + NSFWState + "\n";
+                    $"**NSFW Warning Logs: **" + NSFWState + "\n\n" +
+                    $"**Debug Mode:** " + DebugMode;
                 }).WithSuccesColor().WithThumbnailUrl(Guild.IconUrl);
                 embed.WithTitle($"Settings for {Guild.Name}");
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine(e);
-            }
             return embed;
         }
         public static EmbedBuilder GetWelcomeEmbed(ulong ServerId, SocketUser User)
