@@ -20,6 +20,7 @@ namespace Lynx.Handler
             UserBanLog,
             UserUnbanLog,
             PresenceLog,
+            StatusPresenceLog,
             VoicePresenceLog,
             MessageUpdateLog,
             MessageDeleteLog,
@@ -55,6 +56,8 @@ namespace Lynx.Handler
                         Events.UserBan = !Events.UserBan; break;
                     case Event.UserUnbanLog:
                         Events.UserUnban = !Events.UserUnban; break;
+                    case Event.StatusPresenceLog:
+                        Events.StatusPresenceUpdate = !Events.StatusPresenceUpdate; break;
                     case Event.PresenceLog:
                         Events.PresenceUpdate = !Events.PresenceUpdate; break;
                     case Event.VoicePresenceLog:
