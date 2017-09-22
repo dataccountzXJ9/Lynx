@@ -137,7 +137,7 @@ namespace Lynx.Handler
         {
             using (IAsyncDocumentSession Session = ConfigHandler.Store.OpenAsyncSession())
             {
-                var Config = Session.LoadAsync<BConfig>("BotConfigs");
+                var Config = Session.LoadAsync<BConfig>("BotConfig");
                 var BotConfig_ = Config.Result;
                 switch (BConfig)
                 {
