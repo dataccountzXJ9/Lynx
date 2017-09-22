@@ -19,10 +19,11 @@ namespace Lynx.Handler
         IServiceProvider provider;
         CommandService commands;
         DiscordSocketClient Client;
-        public bool Banned = false;
-     //   public bool Kicked = false;
-     //   public bool Unmuted = false;
-     //   public bool Muted = false;
+        public static bool Banned = false;
+        public static bool Kicked = false;
+        public static bool Unmuted = false;
+        public static bool Muted = false;
+        public static bool Deleted = false;
         public EventsHandler(IServiceProvider Prov)
         {
             provider = Prov;
@@ -135,6 +136,7 @@ namespace Lynx.Handler
                 {
                     if (OUser.Roles.Count < UUser.Roles.Count)
                     {
+                        if (Muted == true) return;
                         var diffRoles = UUser.Roles.Where(r => !OUser.Roles.Contains(r)).Select(r => r.Name);
                         await (Guild.GetLogChannel()).SendMessageAsync("", embed: EmbedMethods.PresenceLogEmbed(OUser, UUser, EmbedMethods.Presence.UserRoleAdded, diffRoles).Build());
                     }
@@ -201,6 +203,7 @@ namespace Lynx.Handler
         }
         internal async Task OnMessageDeleted(Cacheable<IMessage, ulong> Cache, ISocketMessageChannel Channel)
         {
+            if (Deleted == true) return;
             if (Cache.Value.Author == Client.CurrentUser || Cache.Value.Author.IsBot == true) return;
             var Before = (Cache.HasValue ? Cache.Value : null) as IUserMessage;
 
