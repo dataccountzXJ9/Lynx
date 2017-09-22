@@ -148,6 +148,14 @@ namespace Lynx.Modules
             await Context.Guild.ConfigEventsToggle(UpdateHandler.Event.PresenceLog);
             await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithDescription(State).WithSuccesColor().Build());
         }
+        [Command("statuspresenceupdate")]
+        public async Task StatusPresenceUpdatedToggle()
+        {
+            var Config = Context.Guild.LoadServerConfig().Events.PresenceUpdate;
+            var State = Config == false ? "**Started** logging **Status Presence Update Logs**." : "**Stopped** logging **Status Presence Update Logs**.";
+            await Context.Guild.ConfigEventsToggle(UpdateHandler.Event.StatusPresenceLog);
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithDescription(State).WithSuccesColor().Build());
+        }
         [Command("messagedeleted")]
         public async Task MessageDeletedToggle()
         {
