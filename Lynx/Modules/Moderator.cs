@@ -11,6 +11,7 @@ using System.Linq;
 using Lynx.Methods;
 using Lynx.Handler;
 using Lynx.Services.Embed;
+using System.Globalization;
 
 namespace Lynx.Modules
 {
@@ -18,6 +19,29 @@ namespace Lynx.Modules
     public class Moderator : ModuleBase
     {
         OverwritePermissions MutePermissions = new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny);
+        [Command("muteinfo")]
+        public async Task MuteInfoAsync(IUser user)
+        {
+            if (user == Context.User) return;
+            var Config = Context.Guild.LoadMuteList();
+            if (Config.MuteList.ContainsKey(user.Id.ToString()) == false)
+            {
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**{user}** is not muted.").Build()); return;
+            }
+            else
+            {
+                var MuteInfo = Config.MuteList.TryGetValue(user.Id.ToString(), out MuteWrapper Info);
+                var Diff = Info.UnmuteTime - DateTime.Now;
+                var Days = Diff.Days == 0 ? null : $"{Diff.Days.ToString()} days";
+                var Hours = Diff.Hours == 0 ? null : $"{Diff.Hours.ToString()} hours";
+                var Minutes = Diff.Minutes == 0 ? null : $"{Diff.Minutes.ToString()} minutes";
+                var Seconds = Diff.Seconds == 0 ? null : $"{Diff.Seconds.ToString()} seconds";
+
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**User:** {user}\n**Muted by:** {(await Context.Guild.GetUserAsync(Convert.ToUInt64(Info.ModeratorId)) as IUser)}" +
+                    $"\n**Muted at:** {Info.Reason}\n**Unmute at:** {Info.UnmuteTime.ToString("MM-dd HH:mm:ss", CultureInfo.InvariantCulture)} PM (in {Days} {Hours} {Minutes} {Seconds}).").Build());
+            }
+
+        }
         [Command("unmute")]
         public async Task UnmuteAsync(IUser User)
         {
