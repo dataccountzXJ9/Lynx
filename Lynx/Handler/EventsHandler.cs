@@ -49,7 +49,7 @@ namespace Lynx.Handler
             Client.ChannelCreated += OnChannelCreated;
             Client.RoleCreated += OnRoleCreated;
             Client.RoleDeleted += OnRoleDeleted;
-            Client.RoleUpdated += OnRoleUpdated;
+       //   Client.RoleUpdated += OnRoleUpdated; cba to do it!XD
             Client.Ready += async () =>
             {
                 Services.Mute.Extensions.RemoveUser(Client);
@@ -258,14 +258,39 @@ namespace Lynx.Handler
                 await Guild.GetLogChannel().SendMessageAsync("", embed: embed.Build());
             }
         }
-        internal async Task OnRoleCreated(IRole role)
+        internal async Task OnRoleCreated(IRole Role)
         {
-            var Guild = (role as SocketRole).Guild;
+            var Guild = (Role as SocketRole).Guild;
             var Config = Guild.LoadServerConfig();
             if (Config.Events.LogState == true && Config.Events.ChannelCreate == true && Config.Events.LogChannel != "0")
             {
                 var embed = new EmbedBuilder();
-                embed.WithTitle($"🛡 {role.Name} has been created").AddField(x =>
+                embed.WithTitle($"🛡 {Role.Name} has been created").AddField(x =>
+                {
+                    x.Name = "Role Name";
+                    x.Value = Role.Name;
+                }).AddField(x =>
+                {
+                    x.Name = "Role Permissions";
+                    x.Value = string.Join("\n", Role.Permissions);
+                }).WithSuccesColor();
+                await Guild.GetLogChannel().SendMessageAsync("", embed: embed.Build());
+            }
+        }
+        internal async Task OnRoleDeleted(SocketRole role)
+        {
+            var Guild = (role as SocketRole).Guild;
+            var Config = Guild.LoadServerConfig();
+            if (role.Id.ToString() == Config.Moderation.MuteRoleID)
+            {
+                await Guild.UpdateServerModeration(UpdateHandler.Moderation.MuteRole);
+                await Guild.GetLogChannel().SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"**{role.Name}** (server mute role) has been deleted.").Build());
+                return;
+            }
+            if (Config.Events.LogState == true && Config.Events.ChannelCreate == true && Config.Events.LogChannel != "0")
+            {
+                var embed = new EmbedBuilder();
+                embed.WithTitle($"🛡 {role.Name} has been deleted").AddField(x =>
                 {
                     x.Name = "Role Name";
                     x.Value = role.Name;
@@ -277,15 +302,5 @@ namespace Lynx.Handler
                 await Guild.GetLogChannel().SendMessageAsync("", embed: embed.Build());
             }
         }
-        internal async Task OnRoleDeleted(SocketRole Role)
-        {
-
-        }
-
-        internal async Task OnRoleUpdated(SocketRole OutdatedRole, SocketRole UpdatedRole)
-        {
-
-        }
-
     }
 }
