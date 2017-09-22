@@ -21,6 +21,7 @@ namespace Lynx.Modules
         [Command("unmute")]
         public async Task UnmuteAsync(IUser User)
         {
+            EventsHandler.Unmuted = true;
             var Config = Context.Guild.LoadServerConfig();
             if (Context.Client.LoadMuteList().MuteList.ContainsKey(User.Id.ToString()))
             {
@@ -38,6 +39,8 @@ namespace Lynx.Modules
         [Command("mute")]
         public async Task MuteAsync(IUser User, int value = 1, string time = "hour", [Remainder] string reason = "No reason has been provided.")
         {
+            EventsHandler.Muted = true;
+            if (User == Context.User) return;
             var UnmuteTime = Services.Mute.Extensions.GetTime(value, time);
             var Config = Context.Guild.LoadServerConfig();
             if (Config.Moderation.MuteRoleID == null || Config.Moderation.MuteRoleID == "0")
@@ -72,8 +75,8 @@ namespace Lynx.Modules
                 await Context.Client.UpdateMuteList(User, Context.User,UpdateHandler.MuteOption.Mute, UnmuteTime, reason);
                 await (User as SocketGuildUser).AddRoleAsync(Role);
             }
-            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithTitle(":zipper_mouth: User has been muted.").WithDescription(
-                $"{User} has been succesfully muted.\n\n**User:** {User}\n**Unmute Date:** {UnmuteTime.ToLocalTime()}\n**Reason:** {reason}").Build());
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription(
+                $"{User} has been succesfully **muted** from text channels.").Build());
             await Context.Guild.GetLogChannel().SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithTitle(":zipper_mouth: User has been muted.").WithDescription(
             $"{User} has been succesfully muted.\n\n**User:** {User}\n**Unmute Date:** {UnmuteTime.ToLocalTime()}\n**Reason:** {reason}").Build());
         }
