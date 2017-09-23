@@ -11,6 +11,9 @@ using Lynx.Services.Help;
 using static Lynx.Services.Help.HelpExtension;
 using Discord.WebSocket;
 using Lynx.Database;
+using System.Diagnostics;
+using Lynx.Handler;
+
 namespace Lynx.Modules
 {
     public class Utility : ModuleBase
@@ -19,6 +22,36 @@ namespace Lynx.Modules
         public Utility(CommandService service)
         {
             _service = service;
+        }
+        [Command("serverinfo")]
+        public async Task ServerInfoAsync(string x = null)
+        {
+            var Guild = Context.Guild as SocketGuild;
+            int Msgs = 0;
+            DateTime TimeStart = Process.GetCurrentProcess().StartTime.ToUniversalTime();
+            TimeSpan uptime = DateTime.UtcNow - TimeStart;
+            foreach (var TextChannel in Guild.TextChannels)
+            {
+                Msgs = Msgs + TextChannel.CachedMessages.Count();
+            }
+            var Description = $"**<:admin:338418960741695498> Owner:** {Guild.Owner}\n**<:users:337976192554762240> Users:** {Guild.Users.Count}\n**<:help:338419741834346498> Default Channel:** {Guild.DefaultChannel.Mention}\n\n" +
+            $"**<:Discord:337975837464854530> Roles:** {Context.Guild.Roles.Count}\n" +
+            $"**<:notepad:338401542900023298> Assignableroles:** {Context.Guild.LoadServerConfig().Moderation.AssignableRoles.Count}\n" +
+            $"**<:envelop:338011365476401173> Messages:** ({(Msgs / uptime.TotalMinutes).ToString("N2")}/minute)\n";
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription(Description).Build());
+        }
+        [Command("userinfo")]
+        public async Task UserInfoAsync(SocketGuildUser user = null)
+        {
+            if (user == null)
+                user = Context.User as SocketGuildUser;
+            var game = user.Game.HasValue ? $"{user.Game.Value.Name}" : "N/A";
+            string description = $"**<:Discord:337975837464854530> Username:** {user.Username}#{user.Discriminator}\n" +
+            $"**<:Discord:337975837464854530> Status:** {user.Status}\n" +
+            $"**<:game:338422429686824960> Game:** {game}\n" +
+            $"**<:Discord:337975837464854530> Roles:** {user.Roles.Count}\n" +
+            $"**<:uptime:338009832944566274> Created:** {user.CreatedAt.ToString(@"yyyy-MM-dd")}";
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription(description).WithThumbnailUrl(user.GetAvatarUrl()).WithFooter(x=>x.WithText($"Information about {user.Username}.").WithIconUrl(user.GetAvatarUrl())).Build());
         }
         [Command("help")]
         public async Task GetCommandHelp([Remainder] string CommandName)
