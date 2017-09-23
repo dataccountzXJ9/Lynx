@@ -12,6 +12,7 @@ using Lynx.Methods;
 using Lynx.Handler;
 using Lynx.Services.Embed;
 using System.Globalization;
+using Lynx.Services.Help;
 
 namespace Lynx.Modules
 {
@@ -19,6 +20,98 @@ namespace Lynx.Modules
     public class Moderator : ModuleBase
     {
         OverwritePermissions MutePermissions = new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny);
+        [Command("iam")]
+        public async Task IAmAsync(IRole Role)
+        {
+            EventsHandler.Muted = true;
+            var Config = Context.Guild.LoadServerConfig().Moderation;
+            if (Config.AssignableRoles.Contains(Role.Id.ToString()))
+            {
+                await (Context.User as SocketGuildUser).AddRoleAsync(Role);
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"You now have **{Role.Name}**.").Build());
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"**{Role.Name}** is not self-assignable.").Build());
+                return;
+            }
+        }
+        [Command("iamn")]
+        public async Task IAmnAsync(IRole Role)
+        {
+            EventsHandler.Unmuted = true;
+            var Config = Context.Guild.LoadServerConfig().Moderation;
+            if (Config.AssignableRoles.Contains(Role.Id.ToString()))
+            {
+                await (Context.User as SocketGuildUser).RemoveRoleAsync(Role);
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"You no longer have **{Role.Name}**.").Build());
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"**{Role.Name}** is not self-assignable.").Build());
+                return;
+            }
+        }
+        [Command("lsar")]
+        public async Task ListSelfAssignAbleRolesAsync()
+        {
+            int i = 0;
+            int j = 0;
+            var Config = Context.Guild.LoadServerConfig().Moderation.AssignableRoles;
+            if(Config.Count == 0)
+            {
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"**{Context.Guild.Name}'s** selfassignablelist is **empty**.").Build());
+                return;
+            }
+            IList<IRole> RoleList = new List<IRole>();
+            foreach(var Role in Config)
+            {
+                var Role_ = Context.Guild.GetRole(Convert.ToUInt64(Role)) as IRole;
+                if(Role_ == null)
+                {
+                    await Context.Guild.UpdateServerModeration(UpdateHandler.Moderation.RemoveSelfassignableRole, Convert.ToUInt64(Role));
+                    return;
+                }
+                else
+                {
+                    RoleList.Add(Context.Guild.GetRole(Convert.ToUInt64(Role)) as IRole);
+                }
+            }
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"Assignable roles for **{Context.Guild.Name}**\n" + $@"```css
+{string.Join("\n",RoleList.GroupBy(x=> (i++)/ 3).Select(L9=>string.Concat(L9.Select(F=>$"{F.Name, -15}"))))}
+```").Build());
+        }
+        [Command("asar")]
+        public async Task AddSelfAssignAbleRoleAsync([Remainder] IRole Role)
+        {
+            var Config = Context.Guild.LoadServerConfig();
+            if (Config.Moderation.AssignableRoles.Contains(Role.Id.ToString()) == true)
+            {
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"Role **{Role.Name}** is already in the list.").Build()); return;
+            }
+            else
+            {
+                await Context.Guild.UpdateServerModeration(UpdateHandler.Moderation.AddSelfassignableRole, Role.Id);
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"Role **{Role.Name}** has been added to the list.").Build());
+                return;
+            }
+        }
+        [Command("rsar")]
+        public async Task RemoveSelfAssignAbleRoleAsync([Remainder] IRole Role)
+        {
+            var Config = Context.Guild.LoadServerConfig();
+            if (Config.Moderation.AssignableRoles.Contains(Role.Id.ToString()) == false)
+            {
+
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"Role **{Role.Name}** is not in the list.").Build()); return;
+            }
+            else
+            {
+                await Context.Guild.UpdateServerModeration(UpdateHandler.Moderation.RemoveSelfassignableRole, Role.Id);
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"Role **{Role.Name}** has been removed from the list.").Build());
+                return;
+            }
+        }
         [Command("mutelist")]
         public async Task MuteListAsync()
         {
