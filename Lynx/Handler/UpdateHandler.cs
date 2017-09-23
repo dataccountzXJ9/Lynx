@@ -1,12 +1,9 @@
-﻿using Discord.WebSocket;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Raven.Client;
-using Discord;
+﻿using Discord;
+using Discord.WebSocket;
 using Lynx.Database;
 using Raven.Client.Documents.Session;
+using System;
+using System.Threading.Tasks;
 
 namespace Lynx.Handler
 {

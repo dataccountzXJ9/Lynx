@@ -1,13 +1,8 @@
-﻿using Discord.Commands;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Discord;
-using Discord.WebSocket;
-using Discord.Net;
-using System.Threading.Tasks;
+﻿using Discord;
+using Discord.Commands;
 using Lynx.Handler;
 using Lynx.Services.Embed;
+using System.Threading.Tasks;
 
 namespace Lynx.Modules
 {

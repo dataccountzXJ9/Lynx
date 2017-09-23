@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Lynx.Database
+﻿namespace Lynx.Database
 {
     public class BConfig : IBConfig
     {

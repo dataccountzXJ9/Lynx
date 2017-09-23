@@ -1,7 +1,5 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace Lynx.Services.Embed

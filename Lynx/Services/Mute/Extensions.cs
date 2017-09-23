@@ -1,12 +1,4 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Lynx.Handler;
-using Lynx.Methods;
-using Lynx.Services.Embed;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System;
 namespace Lynx.Services.Mute
 {
     public static class Extensions

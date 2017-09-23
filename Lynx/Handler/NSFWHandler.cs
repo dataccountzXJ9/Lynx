@@ -10,7 +10,6 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using static NSFW.NSFWService;
 using static NSFWModels;
 
 namespace NSFW

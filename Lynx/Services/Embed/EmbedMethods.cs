@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Discord;
-using Discord.Commands;
+﻿using Discord;
 using Discord.WebSocket;
-using Lynx.Database;
-using System.Threading.Tasks;
-using System.Linq;
-using Lynx.Methods;
 using Lynx.Handler;
+using Lynx.Methods;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Lynx.Services.Embed
 {

@@ -1,17 +1,11 @@
-﻿using Discord.Commands;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Discord;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
-using Lynx.Database;
-using System.Threading.Tasks;
-using Raven.Client;
-using Lynx.Services.Embed;
-using System.Drawing;
-using System.Globalization;
 using Lynx.Handler;
-using Raven.Client.Documents.Session;
+using Lynx.Services.Embed;
+using System;
+using System.Globalization;
+using System.Threading.Tasks;
 
 namespace Lynx.Modules
 {

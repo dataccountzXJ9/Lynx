@@ -1,17 +1,14 @@
-﻿using Discord.WebSocket;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Lynx.Database;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Discord;
 using Discord.Commands;
-using Discord;
+using Discord.WebSocket;
+using Lynx.Database;
 using Lynx.Methods;
 using Lynx.Services.Embed;
-using Lynx.Modules;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Lynx.Handler
 {

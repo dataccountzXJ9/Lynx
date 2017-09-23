@@ -1,11 +1,10 @@
-﻿using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
-using Microsoft.Extensions.DependencyInjection;
 using Discord.WebSocket;
-using System;
 using Lynx.Handler;
-using Lynx.Database;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Threading.Tasks;
 namespace Lynx
 {
     public class Core

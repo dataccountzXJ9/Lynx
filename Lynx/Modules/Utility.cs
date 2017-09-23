@@ -13,10 +13,10 @@ using Discord.WebSocket;
 using Lynx.Database;
 namespace Lynx.Modules
 {
-    public class Information : ModuleBase
+    public class Utility : ModuleBase
     {
         CommandService _service;
-        public Information(CommandService service)
+        public Utility(CommandService service)
         {
             _service = service;
         }
