@@ -20,7 +20,8 @@ namespace Lynx.Services.Embed
                 var Config = Guild.LoadServerConfig();
                 ITextChannel JoinChannel = Guild.GetJoinLogChannel();
                 ITextChannel LeaveChannel = Guild.GetLeaveLogChannel();
-                ITextChannel LogChnl = Guild.GetLogChannel();            
+                ITextChannel LogChnl = Guild.GetLogChannel();
+                var AutoAssign = Config.Moderation.DefaultAssignRole.AutoAssignEnabled == true && (Guild.GetRole(Convert.ToUInt64(Config.Moderation.DefaultAssignRole.AssignRoleID)) as IRole) != null ? $"Auto-assigning '**{(Guild.GetRole(Convert.ToUInt64(Config.Moderation.DefaultAssignRole.AssignRoleID)).Name)}**'" : "Disabled.";
                 var LogState = Config.Events.LogState == true ? $"Enabled in {LogChnl.Mention}" : "Disabled";
                 var JoinState = Config.Events.Join.IsEnabled == true ? $"Enabled in {JoinChannel.Mention}" : "Disabled";
                 var LeaveState = Config.Events.Leave.IsEnabled == true ? $"Enabled in {LeaveChannel.Mention}" : "Disabled";
@@ -43,6 +44,7 @@ namespace Lynx.Services.Embed
                 {
                     x.Name = "General";
                     x.Value = "**Prefix:** " + Guild.GetPrefix() + "\n" +
+                    $"**Auto-assigning:** " + AutoAssign + "\n" +
                     $"**Welcome Message:** Type {Guild.GetPrefix()}exwelcome.\n"
                     + $"**Leave Message:** Type {Guild.GetPrefix()}exleave.\n";
                 });
