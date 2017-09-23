@@ -59,6 +59,7 @@ namespace Lynx.Handler
         static Timer Timer;
         internal static Task Load()
         {
+            Task.Delay(300);
             Timer = new Timer(_ =>
             {
                 foreach (var Guild in Client.Guilds)
@@ -93,6 +94,10 @@ namespace Lynx.Handler
         {
             var Guild = (User as SocketGuildUser).Guild;
             var Config = Guild.LoadServerConfig();
+            if(Config.Moderation.DefaultAssignRole.AssignRoleID != "0" && Config.Moderation.DefaultAssignRole.AutoAssignEnabled == true)
+            {
+                await (User as SocketGuildUser).AddRoleAsync(Guild.GetRole(Convert.ToUInt64(Config.Moderation.DefaultAssignRole.AssignRoleID)) as IRole);
+            }
             if (Config.Events.Join.IsEnabled == true && Config.Events.LogChannel == "0")
             {
                 var Channel = Guild.GetLogChannel();

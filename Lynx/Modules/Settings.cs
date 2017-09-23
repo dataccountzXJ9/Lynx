@@ -2,9 +2,11 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Lynx.Handler;
+using Lynx.Methods;
 using Lynx.Services.Embed;
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lynx.Modules
@@ -12,6 +14,32 @@ namespace Lynx.Modules
     [RequireUserPermission(GuildPermission.ManageGuild), RequireBotPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
     public class Settings : ModuleBase
     {
+        [Command("autoassign")]
+        public async Task GuildSettingsAsync([Remainder] IRole role = null)
+        {
+            var Config = Context.Guild.LoadServerConfig().Moderation.DefaultAssignRole;
+            if (role != null)
+                if ((Context.User as SocketGuildUser).Roles.Max(x => x.Position) <= role.Position)
+                    return;
+            if (role == null && Config.AutoAssignEnabled == true)
+            {
+                await Context.Guild.UpdateServerModeration(UpdateHandler.Moderation.AutoAssignEventDisable);
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("Succesfully **disabled** auto-assign service. I will no longer auto-assign roles to new users.").WithFooter(x => x.WithText($"{Context.Guild.GetPrefix()}autoassign <role_name> to enable.").WithIconUrl(Context.Client.CurrentUser.GetAvatarUrl())).Build());
+                return;
+            }
+            else if (role == null && Config.AutoAssignEnabled == false)
+            {
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"Auto-assigning is already **disabled**.").WithFooter(x => x.WithText($"{Context.Guild.GetPrefix()}autoassign <role_name> to enable.").WithIconUrl(Context.Client.CurrentUser.GetAvatarUrl())).Build());
+                return;
+            }
+            else 
+            {
+                await Context.Guild.UpdateServerModeration(UpdateHandler.Moderation.AutoAssignRole, role.Id);
+                await Context.Guild.UpdateServerModeration(UpdateHandler.Moderation.AutoAssignEventEnable);
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"I will now assign **{role.Name}** to new users!").WithFooter(x => x.WithText($"{Context.Guild.GetPrefix()}autoassign to disable.").WithIconUrl(Context.Client.CurrentUser.GetAvatarUrl())).Build());
+
+            }
+        }
         [Command("settings")]
         public async Task GuildSettingsAsync()
         {

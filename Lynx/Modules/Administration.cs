@@ -19,7 +19,15 @@ namespace Lynx.Modules
             var Config = Context.Guild.LoadServerConfig().Moderation;
             if (Config.AssignableRoles.Contains(Role.Id.ToString()))
             {
-                await (Context.User as SocketGuildUser).AddRoleAsync(Role);
+                try
+                {
+                    await (Context.User as SocketGuildUser).AddRoleAsync(Role);
+                }
+                catch
+                {
+                    await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"I can not assign **{Role.Name}** because it is higher than my role.").Build());
+                    return;
+                }
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"You now have **{Role.Name}**.").Build());
             }
             else

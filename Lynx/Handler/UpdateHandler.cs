@@ -98,7 +98,8 @@ namespace Lynx.Handler
         {
             MuteRole,
             AutoAssignRole,
-            AutoAssignEvent,
+            AutoAssignEventEnable,
+            AutoAssignEventDisable,
             AddSelfassignableRole,
             RemoveSelfassignableRole,
         }
@@ -114,8 +115,10 @@ namespace Lynx.Handler
                         Moderation_.DefaultAssignRole.AssignRoleID = RoleId.ToString(); break;
                     case Moderation.MuteRole:
                         Moderation_.MuteRoleID = RoleId.ToString(); break;
-                    case Moderation.AutoAssignEvent:
-                        Moderation_.DefaultAssignRole.AutoAssignEnabled = !Moderation_.DefaultAssignRole.AutoAssignEnabled; break;
+                    case Moderation.AutoAssignEventEnable:
+                        Moderation_.DefaultAssignRole.AutoAssignEnabled = true; break;
+                    case Moderation.AutoAssignEventDisable:
+                        Moderation_.DefaultAssignRole.AutoAssignEnabled = false; break;
                     case Moderation.AddSelfassignableRole:
                         Moderation_.AssignableRoles.Add(RoleId.ToString()); break;
                     case Moderation.RemoveSelfassignableRole:
