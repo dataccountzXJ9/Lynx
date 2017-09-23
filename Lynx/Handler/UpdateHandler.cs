@@ -163,30 +163,12 @@ namespace Lynx.Handler
             Mute,
             Unmute,
         }
-        public static async Task UpdateMuteList(this IDiscordClient Client, IUser User, IUser Moderator,MuteOption MuteOption, DateTime UnmuteTime = default(DateTime), string Reason = null)
+        public static async Task UpdateMuteList(this IGuild Guild, IUser User, IUser Moderator, MuteOption MuteOption, DateTime UnmuteTime = default(DateTime), string Reason = null)
         {
             using (IAsyncDocumentSession Session = ConfigHandler.Store.OpenAsyncSession())
             {
-                var Config = Session.LoadAsync<GuildMuteList>("GuildMuteList");
-                var MuteList = Config.Result.MuteList;
-                switch (MuteOption)
-                {
-                    case MuteOption.Mute:
-                        MuteList.Add(User.Id.ToString(), new MuteWrapper { GuildId = (User as SocketGuildUser).Guild.Id.ToString(), MutedAt = DateTime.Now, Reason = Reason, UnmuteTime = UnmuteTime, ModeratorId = Moderator.Id.ToString() }); break;
-                    case MuteOption.Unmute:
-                        MuteList.Remove(User.Id.ToString()); break;
-                }
-                await Session.StoreAsync(Config);
-                await Session.SaveChangesAsync();
-                Session.Dispose();
-            }
-        }
-        public static async Task UpdateMuteList(this DiscordSocketClient Client, IUser User, IUser Moderator, MuteOption MuteOption, DateTime UnmuteTime = default(DateTime), string Reason = null)
-        {
-            using (IAsyncDocumentSession Session = ConfigHandler.Store.OpenAsyncSession())
-            {
-                var Config = Session.LoadAsync<GuildMuteList>("GuildMuteList");
-                var MuteList = Config.Result.MuteList;
+                var Config = Session.LoadAsync<SConfig>("GConfigs/" + Guild.Id);
+                var MuteList = Config.Result.Moderation.MuteList;
                 switch (MuteOption)
                 {
                     case MuteOption.Mute:

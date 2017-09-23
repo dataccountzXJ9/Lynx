@@ -66,6 +66,7 @@ namespace Lynx.Database
         public string MuteRoleID { get; set; } = "0";
         public RoleWrapper DefaultAssignRole { get; set; } = new RoleWrapper();
         public List<string> AssignableRoles { get; set; } = new List<string>();
+        public Dictionary<string, MuteWrapper> MuteList { get; set; } = new Dictionary<string, MuteWrapper>();
     }
     public class RoleWrapper
     {
@@ -74,15 +75,10 @@ namespace Lynx.Database
     }
     public class MuteWrapper
     {
-        public string GuildId { get; set; }
+        public string GuildId { get; set; } 
         public string Reason { get; set; }
         public string ModeratorId { get; set; } = "0";
         public DateTime MutedAt { get; set; }
         public DateTime UnmuteTime { get; set; }
-    }
-    public class GuildMuteList
-    {
-        public string Id { get; set; }
-        public Dictionary<string, MuteWrapper> MuteList { get; set; } = new Dictionary<string, MuteWrapper>();
     }
 }

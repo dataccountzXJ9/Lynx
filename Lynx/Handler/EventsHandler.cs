@@ -11,6 +11,7 @@ using Lynx.Methods;
 using Lynx.Services.Embed;
 using Lynx.Modules;
 using System.Linq;
+using System.Threading;
 
 namespace Lynx.Handler
 {
@@ -18,7 +19,7 @@ namespace Lynx.Handler
     {
         IServiceProvider provider;
         CommandService commands;
-        DiscordSocketClient Client;
+        static DiscordSocketClient Client;
         public static bool Banned = false;
         public static bool Kicked = false;
         public static bool Unmuted = false;
@@ -39,7 +40,7 @@ namespace Lynx.Handler
             };
             Client.UserJoined += OnUserJoin;
             Client.UserLeft += OnUserLeft;
-            Client.UserBanned += async (User,Guild) => {await OnUserBanned(User, Guild); Banned = true;};
+            Client.UserBanned += async (User, Guild) => { await OnUserBanned(User, Guild); Banned = true; };
             Client.UserUnbanned += OnUserUnbanned;
             Client.GuildMemberUpdated += OnGuildPresenceUpdated;
             Client.UserUpdated += OnPresenceUpdated;
@@ -50,14 +51,47 @@ namespace Lynx.Handler
             Client.ChannelCreated += OnChannelCreated;
             Client.RoleCreated += OnRoleCreated;
             Client.RoleDeleted += OnRoleDeleted;
-       //   Client.RoleUpdated += OnRoleUpdated; cba to do it!XD
+            //  Client.RoleUpdated += OnRoleUpdated; cba to do it!XD
             Client.Ready += async () =>
             {
-                Services.Mute.Extensions.RemoveUser(Client);
+
+                //    Services.Mute.Extensions.RemoveUser(Client);
                 await Task.CompletedTask;
             };
         }
-
+        static Timer Timer;
+        internal static Task Load()
+        {
+            Timer = new Timer(_ =>
+            {
+                foreach (var Guild in Client.Guilds)
+                {
+                    var Config = Guild.LoadServerConfig();
+                    var Mutelist = Config.Moderation.MuteList;
+                    Task.WhenAll(Mutelist.Select(async snc =>
+                    {
+                        if (DateTime.Now > snc.Value.UnmuteTime)
+                        {
+                            Unmuted = true;
+                            var User = Guild.GetUser(Convert.ToUInt64(snc.Key)) as SocketGuildUser;
+                            await (User as SocketGuildUser).RemoveRoleAsync((Guild.GetRole(Convert.ToUInt64(Guild.LoadServerConfig().Moderation.MuteRoleID))));
+                            await Guild.GetJoinLogChannel().SendMessageAsync($"", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**{User}** has been **unmuted** from text and voice chat.").WithFooter(x =>
+                            {
+                                x.Text = $"{User} | [Automatic Message]";
+                                x.IconUrl = User.GetAvatarUrl();
+                            }).Build());
+                            await Guild.GetLogChannel().SendMessageAsync($"", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**{User}** has been **unmuted** from text and voice chat.").WithFooter(x =>
+                            {
+                                x.Text = $"{User} | [Automatic Message]";
+                                x.IconUrl = User.GetAvatarUrl();
+                            }).Build());
+                            await Guild.UpdateMuteList(User as IUser, null, UpdateHandler.MuteOption.Unmute);
+                        }
+                    }));
+                }
+            }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+            return Task.CompletedTask;
+        }
         internal async Task OnUserJoin(SocketUser User)
         {
             var Guild = (User as SocketGuildUser).Guild;
@@ -142,12 +176,13 @@ namespace Lynx.Handler
                     }
                     else if (OUser.Roles.Count > UUser.Roles.Count)
                     {
+                        if (Unmuted == true) return;
                         var diffRoles = OUser.Roles.Where(r => !UUser.Roles.Contains(r)).Select(r => r.Name);
-                        var MuteList = Guild.LoadMuteList();
+                        var MuteList = Guild.LoadServerConfig().Moderation;
                         var User_ = MuteList.MuteList.TryGetValue(UUser.Id.ToString(), out MuteWrapper Value);
                         if (diffRoles.Contains("Lynx-Mute") && Value.UnmuteTime >= DateTime.Now)
                         {
-                            await Client.UpdateMuteList(UpdatedUser as IUser, null, UpdateHandler.MuteOption.Unmute);
+                            await Guild.UpdateMuteList(UpdatedUser as IUser, null, UpdateHandler.MuteOption.Unmute);
                                 await Guild.GetLogChannel().SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithAuthor(x=> { x.Name = "User force unmuted.";x.IconUrl = UUser.GetAvatarUrl(); })
                                 .WithDescription($"**{UUser}** has been force unmuted.\n\n**Unmute at:** {DateTime.Now}\n\n").AddField(x=> { x.Name = "Mute Report:";
                                     x.Value = $"**Muted at:** {Value.MutedAt}\n" +

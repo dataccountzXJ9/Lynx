@@ -59,40 +59,7 @@ namespace Lynx.Handler
             using (IDocumentSession session = Store.OpenSession())
                 return session.Load<BConfig>("BotConfig");
         }
-        public static GuildMuteList LoadMuteList(this IDiscordClient Client)
-        {
-            using (IDocumentSession session = Store.OpenSession())
-                return session.Load<GuildMuteList>("GuildMuteList");
-        }
-        public static GuildMuteList LoadMuteList(this DiscordSocketClient Client)
-        {
-            using (IDocumentSession session = Store.OpenSession())
-                return session.Load<GuildMuteList>("GuildMuteList");
-        }
-        public static GuildMuteList LoadMuteList(this SocketGuild Client)
-        {
-            using (IDocumentSession session = Store.OpenSession())
-                return session.Load<GuildMuteList>("GuildMuteList");
-        }
-        public static GuildMuteList LoadMuteList(this IGuild Client)
-        {
-            using (IDocumentSession session = Store.OpenSession())
-                return session.Load<GuildMuteList>("GuildMuteList");
-        }
         //////////////////////////////////////////////////////////////
-        public static Task CheckMuteList(this DiscordSocketClient Client)
-        {
-            using (IDocumentSession store = Store.OpenSession())
-            {
-                var Check = store.Load<GuildMuteList>("GuildMuteList");
-                if (Check == null)
-                {
-                    store.Store(new GuildMuteList { Id = "GuildMuteList" });
-                }
-                store.SaveChanges();
-            }
-            return Task.CompletedTask;
-        }
         public static Task CheckBotConfig(this DiscordSocketClient Client)
         {
             using (IDocumentSession store = Store.OpenSession())
