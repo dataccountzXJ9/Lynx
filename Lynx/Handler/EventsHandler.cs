@@ -51,7 +51,7 @@ namespace Lynx.Handler
             Client.ChannelCreated += OnChannelCreated;
             Client.RoleCreated += OnRoleCreated;
             Client.RoleDeleted += OnRoleDeleted;
-            //  Client.RoleUpdated += OnRoleUpdated; cba to do it!XD
+    //      Client.RoleUpdated += OnRoleUpdated; 
             Client.Ready += async () =>
             {
 
@@ -339,6 +339,19 @@ namespace Lynx.Handler
                 }).WithSuccesColor();
                 await Guild.GetLogChannel().SendMessageAsync("", embed: embed.Build());
             }
+        }
+        public static string GetPermissions(SocketRole Role)
+        {
+            var Perms = Role.Permissions;
+            var AddReactions = Perms.AddReactions == true ? "Can Add Reactions" : null;
+            var Administrator = Perms.Administrator == true ? "Granted Administrator" : null;
+            var X = Perms.AttachFiles == true ? "Can Attach Files" : null;
+            var Z = Perms.BanMembers == true ? "Can Ban Perms" : null;
+            var n = Perms.ChangeNickname == true ? "Can Change Their Own Nickname" : null;
+            var a = Perms.Connect == true ? "Can Connect to Voicechannels" : null;
+            var b = Perms.CreateInstantInvite == true ? "Can Create Instant Invite" : null;
+            
+            return AddReactions + "\n" + Administrator + "\n" + X + "\n" ;
         }
     }
 }
