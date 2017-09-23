@@ -39,11 +39,6 @@ namespace Lynx.Handler
             var Context = new SocketCommandContext(Client, Message as SocketUserMessage);
             if (!(Message as SocketUserMessage).HasStringPrefix(Guild.GetPrefix().ToLowerInvariant(), ref argPos)) return;
             var Result = await commands.ExecuteAsync(Context, argPos, provider);
-            if (Result.IsSuccess)
-            {
-                await Context.Message.DeleteAsync();
-                EventsHandler.Deleted = true;
-            }
             if (!Result.IsSuccess)
             {
                 if (Context.Client.LoadBotConfig().Debug == true)
