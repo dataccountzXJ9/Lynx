@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Lynx.Database;
+using Lynx.Services.Embed;
 using Raven.Client;
 using System;
 using System.Collections.Generic;
