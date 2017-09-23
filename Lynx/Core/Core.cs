@@ -14,6 +14,7 @@ namespace Lynx
         DiscordSocketClient Client;
         CommandHandler Handler;
         EventsHandler EHandler;
+
         public async Task Start()
         {
             Client = new DiscordSocketClient(new DiscordSocketConfig
@@ -22,7 +23,7 @@ namespace Lynx
                 LogLevel = LogSeverity.Verbose,
             });
             await Client.CheckBotConfig();
-            await Client.CheckMuteList();
+            await EventsHandler.Load();
             await Client.LoginAsync(TokenType.Bot, Client.LoadBotConfig().BotToken);
             await Client.StartAsync();
             Client.Log += (Log) => Task.Run(() =>
