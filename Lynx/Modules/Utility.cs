@@ -13,6 +13,9 @@ using Discord.WebSocket;
 using Lynx.Database;
 using System.Diagnostics;
 using Lynx.Handler;
+using Raven.Client.Documents;
+using Raven.Client.Documents.Operations;
+using Raven.Client.Documents.Session;
 
 namespace Lynx.Modules
 {
@@ -23,8 +26,9 @@ namespace Lynx.Modules
         {
             _service = service;
         }
+
         [Command("serverinfo")]
-        public async Task ServerInfoAsync(string x = null)
+        public async Task ServerInfoAsync()
         {
             var Guild = Context.Guild as SocketGuild;
             int Msgs = 0;
