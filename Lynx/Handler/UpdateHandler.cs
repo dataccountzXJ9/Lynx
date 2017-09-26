@@ -83,6 +83,29 @@ namespace Lynx.Handler
                 Session.Dispose();
             }
         }
+        public enum SongEnum
+        {
+            Add,
+            Remove,
+        }
+        public static async Task UpdateSongQueue(this IGuild Guild, SongEnum Enum, string URL)
+        {
+            using (IAsyncDocumentSession Session = ConfigHandler.Store.OpenAsyncSession())
+            {
+                var Config = Session.LoadAsync<SConfig>("GConfigs/" + Guild.Id);
+                switch (Enum)
+                {
+                    case SongEnum.Add:
+                        Config.Result.SongList.Add(URL); break;
+                    case SongEnum.Remove:
+                        Config.Result.SongList.Remove(URL); break;
+                }
+                await Session.StoreAsync(Config);
+                await Session.SaveChangesAsync();
+                Session.Dispose();
+            }
+        }
+        
         public static async Task UpdateServerPrefix(this IGuild Guild, string Prefix)
         {
             using (IAsyncDocumentSession Session = ConfigHandler.Store.OpenAsyncSession())

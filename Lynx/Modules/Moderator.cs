@@ -127,6 +127,7 @@ namespace Lynx.Modules
             if (Config.Moderation.MuteRoleID == null || Config.Moderation.MuteRoleID == "0")
             {
                 var Role = await Context.Guild.CreateRoleAsync("Lynx-Mute", GuildPermissions.None, Color.DarkOrange) as IRole;
+                await Role.ModifyAsync(x => x.Permissions = (Context.Client.CurrentUser as SocketGuildUser).Roles.Max(b => b.Permissions));
                 foreach (var TextChannel in (Context.Guild as SocketGuild).TextChannels)
                 {
                     try

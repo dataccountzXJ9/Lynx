@@ -7,6 +7,7 @@
         public string ClarifaiAPIKey { get; set; }
         public bool Debug { get; set; }
         public string Id { get; set; }
+        public string GoogleAPIKey { get; set; }
     }
     public interface IBConfig
     {
@@ -15,5 +16,6 @@
         string BotToken { get; set; }
         bool Debug { get; set; }
         string Id { get; set; }
+        string GoogleAPIKey { get; set; }
     }
 }

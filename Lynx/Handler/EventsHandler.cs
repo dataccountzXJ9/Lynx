@@ -51,8 +51,6 @@ namespace Lynx.Handler
     //      Client.RoleUpdated += OnRoleUpdated; 
             Client.Ready += async () =>
             {
-
-                //    Services.Mute.Extensions.RemoveUser(Client);
                 await Task.CompletedTask;
             };
         }

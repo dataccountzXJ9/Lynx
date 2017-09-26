@@ -10,6 +10,13 @@ namespace Lynx.Database
         public EmbedB LeaveMessage { get; set; } = new EmbedB();
         public EventsWrapper Events { get; set; } = new EventsWrapper();
         public ModerationWrapper Moderation { get; set; } = new ModerationWrapper();
+        public List<string> SongList { get; set; } = new List<string>();
+  //    public Dictionary<string, CustomReactionWrapper> CustomReactions { get; set; } = new Dictionary<string, CustomReactionWrapper>(); VERY WIP
+    }
+    public class SongListWrapper
+    {
+        public string RequestedBy { get; set; } = "0";
+        public string SongLink { get; set; } = "0";
     }
     public class EventsWrapper
     {
