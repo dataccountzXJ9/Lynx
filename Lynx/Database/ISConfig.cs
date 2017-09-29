@@ -3,21 +3,21 @@ using System.Collections.Generic;
 namespace Lynx.Database
 {
     public class SConfig
-    { 
+    {
         public string Id { get; set; }
         public string ServerPrefix { get; set; }
         public EmbedB WelcomeMessage { get; set; } = new EmbedB();
         public EmbedB LeaveMessage { get; set; } = new EmbedB();
         public EventsWrapper Events { get; set; } = new EventsWrapper();
         public ModerationWrapper Moderation { get; set; } = new ModerationWrapper();
-        public List<string> SongList { get; set; } = new List<string>();
-  //    public Dictionary<string, CustomReactionWrapper> CustomReactions { get; set; } = new Dictionary<string, CustomReactionWrapper>(); VERY WIP
+        //   public List<string> SongList { get; set; } = new List<string>();
+        //   public Dictionary<string, CustomReactionWrapper> CustomReactions { get; set; } = new Dictionary<string, CustomReactionWrapper>(); VERY WIP
     }
-    public class SongListWrapper
-    {
-        public string RequestedBy { get; set; } = "0";
-        public string SongLink { get; set; } = "0";
-    }
+    // public class SongListWrapper
+    // {
+    //   public string RequestedBy { get; set; } = "0";
+    //   public string SongLink { get; set; } = "0";
+    // }
     public class EventsWrapper
     {
         public bool LogState { get; set; } = false;
@@ -41,7 +41,7 @@ namespace Lynx.Database
     }
     public class EmbedB
     {
-        public string Title { get; set; } 
+        public string Title { get; set; }
         public string Description { get; set; }
         public string URL { get; set; }
         public string ThumbnailURL { get; set; }
@@ -79,10 +79,12 @@ namespace Lynx.Database
     }
     public class MuteWrapper
     {
-        public string GuildId { get; set; } 
+        public string GuildId { get; set; }
         public string Reason { get; set; }
         public string ModeratorId { get; set; } = "0";
         public DateTime MutedAt { get; set; }
         public DateTime UnmuteTime { get; set; }
     }
 }
+    
+

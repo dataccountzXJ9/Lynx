@@ -38,8 +38,7 @@ namespace Lynx
         {
             var services = new ServiceCollection()
                 .AddSingleton(Client)
-                 .AddSingleton(new CommandService(new CommandServiceConfig { CaseSensitiveCommands = false, ThrowOnError = false }))
-                 .AddSingleton(new AudioService());
+                 .AddSingleton(new CommandService(new CommandServiceConfig { CaseSensitiveCommands = false, ThrowOnError = false }));
             var provider = new DefaultServiceProviderFactory().CreateServiceProvider(services);
             return provider;
         }
