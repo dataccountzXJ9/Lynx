@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Lynx.Modules
 {
-    public class CustomReactions : ModuleBase
+    public class CustomReactions : InteractiveBase
     {
         static GuildConfig GuildConfig = new GuildConfig();
         private static readonly PaginatedAppearanceOptions AOptions = new PaginatedAppearanceOptions()
@@ -46,11 +46,11 @@ namespace Lynx.Modules
         public async Task Test_NextMessageAsync()
         {
             await ReplyAsync("What is 2+2?");
-          //  var response = await NextMessageAsync();
-         //   if (response != null)
-        //        await ReplyAsync($"You replied: {response.Content}");
-      //      else
-       //         await ReplyAsync("You did not reply before the timeout");
+            var response = await NextMessageAsync();
+            if (response != null)
+                await ReplyAsync($"You replied: {response.Content}");
+            else
+                await ReplyAsync("You did not reply before the timeout");
         }
         [Command("lcr")]
         public async Task ListCustomReactions()
@@ -62,7 +62,7 @@ namespace Lynx.Modules
                 Options = AOptions,
 
             };
-        //    await PagedReplyAsync(paginatedMessage);
+            await PagedReplyAsync(paginatedMessage);
         }
     }
 }
