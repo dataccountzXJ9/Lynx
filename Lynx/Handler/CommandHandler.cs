@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using Lynx.Methods;
 using Lynx.Services.Embed;
 using Microsoft.Extensions.DependencyInjection;
+using NLog;
 using NSFW;
 using System;
 using System.Reflection;
@@ -16,6 +17,7 @@ namespace Lynx.Handler
         DiscordSocketClient Client;
         IServiceProvider provider;
         CommandService commands;
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         public CommandHandler(IServiceProvider Prov)
         {
             provider = Prov;
@@ -27,6 +29,7 @@ namespace Lynx.Handler
         {
             provider = Provider;
             await commands.AddModulesAsync(Assembly.GetEntryAssembly());
+            logger.Info("Modules have been initialized.");
         }
         public async Task HandleCommand(SocketMessage Message)
         {
@@ -58,12 +61,6 @@ namespace Lynx.Handler
                             .WithDescription("**In Channel:** " + (Message.Channel as SocketTextChannel).Mention + $" [{Message.Channel.Id}]\n"
                             + "**Parameters: **" + Message.Content + "\n"
                             + "**Fired by:** " + Message.Author).Build());
-                            return;
-                        case CommandError.MultipleMatches:
-                        case CommandError.ObjectNotFound:
-                        case CommandError.ParseFailed:
-                        case CommandError.UnknownCommand:
-                        case CommandError.Unsuccessful:
                             return;
                     }
                 }

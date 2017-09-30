@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using Lynx.Database;
 using Lynx.Handler;
 using Newtonsoft.Json;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,7 @@ namespace NSFW
     public class NSFWService
     {
         static LynxConfig LynxConfig = new LynxConfig();
+        static Logger logger = LogManager.GetCurrentClassLogger();
         private static async Task<bool> IsImageUrlAsync(string URL)
         {
             Uri targetUriA = null;
@@ -115,6 +117,7 @@ namespace NSFW
                                 try
                                 {
                                     await usrMsg.DeleteAsync();
+                                    logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
                                 }
                                 catch { }
                                 return true;
@@ -140,7 +143,8 @@ namespace NSFW
                         {
                             try
                             {
-                                await usrMsg.DeleteAsync().ConfigureAwait(false);
+                                await usrMsg.DeleteAsync();
+                                logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
                             }
                             catch { }
                             return true;
@@ -152,8 +156,6 @@ namespace NSFW
                     }
                 }
             }
-
-            //Finally check raw post URLs (does not support HTTPS)
             var linkParser = new Regex(@"\b(?:https?://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
             foreach (Match m in linkParser.Matches(message))
             {
@@ -169,6 +171,7 @@ namespace NSFW
                             try
                             {
                                 await usrMsg.DeleteAsync();
+                                logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
                             }
                             catch { }
                             return true;
@@ -186,6 +189,7 @@ namespace NSFW
                             try
                             {
                                 await usrMsg.DeleteAsync();
+                                logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
                             }
                             catch { }
                             return true;
@@ -202,6 +206,7 @@ namespace NSFW
                                 try
                                 {
                                     await usrMsg.DeleteAsync();
+                                   logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
                                 }
                                 catch { }
                                 return true;

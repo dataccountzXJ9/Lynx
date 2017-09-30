@@ -4,11 +4,12 @@ using Lynx.Handler;
 using Lynx.Models.Database;
 using Raven.Client.Documents.Session;
 using System.Threading.Tasks;
-
+using NLog;
 namespace Lynx.Database
 {
     public class GuildConfig
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         public ServerModel LoadAsync(ulong GuildId)
         {
                 using (IDocumentSession Session = ConfigHandler.Store.OpenSession())
@@ -31,15 +32,19 @@ namespace Lynx.Database
                 {
                     case Actions.Add:
                         if (!await Session.ExistsAsync($"{GuildId}"))
+                        {
                             await Session.StoreAsync(
                                 new ServerModel
                                 {
                                     Id = $"{GuildId}",
-                                    ServerPrefix = "?>"
+                                    ServerPrefix = "?"
                                 }).ConfigureAwait(false);
+                            logger.Info($"Config [{GuildId}] has been created succesfully.");
+                        }
                         break;
                     case Actions.Delete:
-                        if (await Session.ExistsAsync($"{GuildId}")) Session.Delete($"{GuildId}"); break;
+                        if (await Session.ExistsAsync($"{GuildId}")) Session.Delete($"{GuildId}"); 
+                        logger.Warn($"Config [{GuildId}] has been deleted succesfully."); break;
                 }
                 await Session.SaveChangesAsync().ConfigureAwait(false);
                 Session.Dispose();

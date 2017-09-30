@@ -1,5 +1,6 @@
 ﻿using Lynx.Handler;
 using Lynx.Models.Database;
+using NLog;
 using Raven.Client.Documents.Session;
 using System;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ namespace Lynx.Database
 {
     public class LynxConfig
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         public LynxModel LoadConfig
         {
             get
@@ -22,8 +24,10 @@ namespace Lynx.Database
             {
                 if (await Session.LoadAsync<LynxModel>("LynxConfig") == null)
                 {
-                    Console.WriteLine("IT DOES NOT EXIST");
+                    logger.Error("No bot config has been found. Creating one..");
+                    logger.Error("Input bot token: ");
                     string BotToken = Console.ReadLine();
+                    logger.Error("Input bot prefix: ");
                     string BotPrefix = Console.ReadLine();
                     await Session.StoreAsync(new LynxModel
                     {
@@ -31,13 +35,13 @@ namespace Lynx.Database
                         BotPrefix = BotPrefix,
                         BotToken = BotToken,
                     }).ConfigureAwait(false);
-                    
-                    await Session.SaveChangesAsync().ConfigureAwait(false); ;
+                    await Session.SaveChangesAsync().ConfigureAwait(false);
+                    logger.Log(LogLevel.Info, "Bot config has been created.");
                     Session.Dispose();
                 }
                 else
                 {
-                    Console.WriteLine("IT DOES EXIST");
+                    logger.Log(LogLevel.Info, "Bot config has been succesfully loaded.");
                 }
             }
         }

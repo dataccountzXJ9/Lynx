@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using Lynx.Database;
 using Lynx.Methods;
 using Lynx.Services.Embed;
+using NLog;
 using System;
 using System.Linq;
 using System.Threading;
@@ -14,6 +15,7 @@ namespace Lynx.Handler
     {
         static Events Events = new Events();
         static GuildConfig GuildConfig = new GuildConfig();
+        static Logger logger = LogManager.GetCurrentClassLogger();
         public MuteHandler()
         {
             Events.OnUserUnmuted += OnUserUnmuted;
@@ -45,7 +47,7 @@ namespace Lynx.Handler
         static Timer Timer;
         internal static Task MuteService(DiscordSocketClient Client)
         {
-
+            logger.Info("Mute service has been created.");
             Timer = new Timer(_ =>
             {
                 foreach (var Guild in Client.Guilds)
