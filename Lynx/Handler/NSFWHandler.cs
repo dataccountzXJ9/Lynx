@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Lynx.Database;
 using Lynx.Handler;
 using Newtonsoft.Json;
 using System;
@@ -16,6 +17,7 @@ namespace NSFW
 {
     public class NSFWService
     {
+        static LynxConfig LynxConfig = new LynxConfig();
         private static async Task<bool> IsImageUrlAsync(string URL)
         {
             Uri targetUriA = null;
@@ -56,7 +58,7 @@ namespace NSFW
 
             using (HttpClient client = new HttpClient())
             {
-                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + ConfigHandler.LoadBotConfigM().ClarifaiAPIKey);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + LynxConfig.LoadConfig.ClarifaiAPIKey);
 
                 HttpContent json = new StringContent(
                     "{" +

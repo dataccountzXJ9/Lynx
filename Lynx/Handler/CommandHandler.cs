@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using Lynx.Methods;
 using Lynx.Services.Embed;
 using Microsoft.Extensions.DependencyInjection;
+using NSFW;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -20,22 +21,23 @@ namespace Lynx.Handler
             provider = Prov;
             Client = provider.GetService<DiscordSocketClient>();
             commands = provider.GetService<CommandService>();
-            Client.MessageReceived += async (Message) => { await HandleCommand(Message); await NSFW.NSFWService.NSFWImplementation(Message); };
+            Client.MessageReceived += async (Message) => { await HandleCommand(Message); await NSFWService.NSFWImplementation(Message); };
         }
-        public async Task ConfigureAsync()
+        public async Task ConfigureAsync(IServiceProvider Provider)
         {
+            provider = Provider;
             await commands.AddModulesAsync(Assembly.GetEntryAssembly());
         }
         public async Task HandleCommand(SocketMessage Message)
         {
             int argPos = 0;
             var Guild = (Message.Channel as SocketTextChannel).Guild;
-            var Context = new SocketCommandContext(Client, Message as SocketUserMessage);
+            var Context = new LynxContext(Client, Message as SocketUserMessage, provider);
             if (!(Message as SocketUserMessage).HasStringPrefix(Guild.GetPrefix().ToLowerInvariant(), ref argPos)) return;
             var Result = await commands.ExecuteAsync(Context, argPos, provider);
             if (!Result.IsSuccess)
             {
-                if (Context.Client.LoadBotConfig().Debug == true)
+                if (Context.LynxConfig.Debug == true)
                 {
                     await Context.Channel.SendMessageAsync(Result.ErrorReason);
                 }

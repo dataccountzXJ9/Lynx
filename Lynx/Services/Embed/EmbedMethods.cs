@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Lynx.Database;
 using Lynx.Handler;
 using Lynx.Methods;
 using System;
@@ -14,10 +15,12 @@ namespace Lynx.Services.Embed
             => Embed.WithColor(Discord.Color.Green);
         public static EmbedBuilder WithFailedColor(this EmbedBuilder Embed)
             => Embed.WithColor(Discord.Color.Red);
+        static GuildConfig GuildConfig = new GuildConfig();
+        static LynxConfig LynxConfig = new LynxConfig();
         public static EmbedBuilder ShowSettingsEmbed(SocketGuild Guild)
         {
             var embed = new EmbedBuilder();
-                var Config = Guild.LoadServerConfig();
+            var Config = GuildConfig.LoadAsync(Guild.Id);
                 ITextChannel JoinChannel = Guild.GetJoinLogChannel();
                 ITextChannel LeaveChannel = Guild.GetLeaveLogChannel();
                 ITextChannel LogChnl = Guild.GetLogChannel();
@@ -38,7 +41,7 @@ namespace Lynx.Services.Embed
                 var RLUpdatedState = Config.Events.RoleUpdate & Config.Events.LogState == true ? $"Enabled" : "Disabled";
                 var RLDeletedState = Config.Events.RoleDelete & Config.Events.LogState == true ? $"Enabled" : "Disabled";
                 var NSFWState = Config.Events.NSFWWarning & Config.Events.LogState == true ? $"Enabled" : "Disabled";
-                var DebugMode = Guild.LoadBotConfig().Debug == true ? $"Enabled" : "Disabled";
+                var DebugMode = LynxConfig.LoadConfig.Debug == true ? $"Enabled" : "Disabled";
                 var LogChannel = Config.Events.LogChannel != "0" ? (Guild.GetTextChannel(Convert.ToUInt64(Config.Events.LogChannel)) as SocketTextChannel).Mention : "No log channel set.";
                 embed.AddField(x =>
                 {
@@ -71,7 +74,7 @@ namespace Lynx.Services.Embed
         public static EmbedBuilder GetWelcomeEmbed(ulong ServerId, SocketUser User)
         {
             var WelcomeMessage = "";
-            var Config = (User as SocketGuildUser).Guild.LoadServerConfig().WelcomeMessage;
+            var Config = GuildConfig.LoadAsync(ServerId).WelcomeMessage;
             if (Config.Description == null)
             {
                 WelcomeMessage = $"%usermention% joined %servername%";
@@ -104,7 +107,7 @@ namespace Lynx.Services.Embed
         public static EmbedBuilder GetLeaveEmbed(ulong ServerId, SocketUser User)
         {
             var LeaveMessage = "";
-            var Config= (User as SocketGuildUser).Guild.LoadServerConfig().LeaveMessage;
+            var Config= GuildConfig.LoadAsync(ServerId).LeaveMessage;
             if (Config.Description == null)
             {
                 LeaveMessage = $"%usermention% left %servername%";

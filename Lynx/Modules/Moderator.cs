@@ -9,24 +9,27 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using static Lynx.Modules.Settings;
 
 namespace Lynx.Modules
 {
     [RequireUserPermission(GuildPermission.ManageGuild), RequireBotPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
-    public class Moderator : ModuleBase
+    public class Moderator : ModuleBase<LynxContext>
     {
+        static GuildConfig GuildConfig = new GuildConfig();
         OverwritePermissions MutePermissions = new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny);
         [Command("asar")]
         public async Task AddSelfAssignAbleRoleAsync([Remainder] IRole Role)
         {
-            var Config = Context.Guild.LoadServerConfig();
+            var Config = Context.Config;
             if (Config.Moderation.AssignableRoles.Contains(Role.Id.ToString()) == true)
             {
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"Role **{Role.Name}** is already in the list.").Build()); return;
             }
             else
             {
-                await Context.Guild.UpdateServerModeration(UpdateHandler.Moderation.AddSelfassignableRole, Role.Id);
+                Config.Moderation.AssignableRoles.Add(Role.Id.ToString());
+                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"Role **{Role.Name}** has been added to the list.").Build());
                 return;
             }
@@ -34,7 +37,7 @@ namespace Lynx.Modules
         [Command("rsar")]
         public async Task RemoveSelfAssignAbleRoleAsync([Remainder] IRole Role)
         {
-            var Config = Context.Guild.LoadServerConfig();
+            var Config = Context.Config;
             if (Config.Moderation.AssignableRoles.Contains(Role.Id.ToString()) == false)
             {
 
@@ -42,7 +45,8 @@ namespace Lynx.Modules
             }
             else
             {
-                await Context.Guild.UpdateServerModeration(UpdateHandler.Moderation.RemoveSelfassignableRole, Role.Id);
+                Config.Moderation.AssignableRoles.Remove(Role.Id.ToString());
+                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"Role **{Role.Name}** has been removed from the list.").Build());
                 return;
             }
@@ -50,7 +54,7 @@ namespace Lynx.Modules
         [Command("mutelist")]
         public async Task MuteListAsync()
         {
-            var Dict = Context.Guild.LoadServerConfig().Moderation;
+            var Dict = Context.Config.Moderation;
             if (Dict.MuteList.Keys.Count == 0)
             {
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"Mute list on {Context.Guild.Name} [{Context.Guild.Id}] is empty.").Build());
@@ -80,7 +84,7 @@ namespace Lynx.Modules
         public async Task MuteInfoAsync(IUser user)
         {
             if (user == Context.User) return;
-            var Config = Context.Guild.LoadServerConfig().Moderation;
+            var Config = Context.Config.Moderation;
             if (Config.MuteList.ContainsKey(user.Id.ToString()) == false)
             {
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**{user}** is not muted.").Build()); return;
@@ -100,14 +104,15 @@ namespace Lynx.Modules
 
         }
         [Command("unmute")]
-        public async Task UnmuteAsync(IUser User)
+        public async Task UnmuteAsync(SocketGuildUser User)
         {
             EventsHandler.Unmuted = true;
-            var Config = Context.Guild.LoadServerConfig();
+            var Config = Context.Config;
             if (Config.Moderation.MuteList.ContainsKey(User.Id.ToString()))
             {
                 IRole MuteRole = Context.Guild.GetRole(Convert.ToUInt64(Config.Moderation.MuteRoleID)) as IRole;
-                await Context.Guild.UpdateMuteList(User, null, UpdateHandler.MuteOption.Unmute);
+                Config.Moderation.MuteList.Remove(User.Id.ToString());
+                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
                 await (User as SocketGuildUser).RemoveRoleAsync(MuteRole);
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**{User}** has been **unmuted** from and text chat.").Build());
                 return;
@@ -118,16 +123,16 @@ namespace Lynx.Modules
             }
         }
         [Command("mute")]
-        public async Task Mute1Async(IUser User, int value = 1, string time = "hour", [Remainder] string reason = "No reason has been provided.")
+        public async Task Mute1Async(SocketGuildUser User, int value = 1, string time = "hour", [Remainder] string reason = "No reason has been provided.")
         {
             EventsHandler.Muted = true;
             if (User == Context.User) return;
-            var UnmuteTime = Services.Mute.Extensions.GetTime(value, time);
-            var Config = Context.Guild.LoadServerConfig();
+            var UnmuteTime = Services.MuteService.Extensions.GetTime(value, time);
+            var Config = Context.Config;
             if (Config.Moderation.MuteRoleID == null || Config.Moderation.MuteRoleID == "0")
             {
                 var Role = await Context.Guild.CreateRoleAsync("Lynx-Mute", GuildPermissions.None, Color.DarkOrange) as IRole;
-                await Role.ModifyAsync(x => x.Permissions = (Context.Client.CurrentUser as SocketGuildUser).Roles.Max(b => b.Permissions));
+        //      await Role.ModifyAsync(x => x.Permissions = (Context.Client.CurrentUser as SocketGuildUser).Roles.Max(b => b.Permissions));
                 foreach (var TextChannel in (Context.Guild as SocketGuild).TextChannels)
                 {
                     try
@@ -136,14 +141,15 @@ namespace Lynx.Modules
                     }
                     catch { }
                 }
-                await Context.Guild.UpdateServerModeration(UpdateHandler.Moderation.MuteRole, Role.Id);
-                await Context.Guild.UpdateMuteList(User, Context.User, UpdateHandler.MuteOption.Mute, UnmuteTime, reason);
+                Config.Moderation.MuteRoleID = Role.Id.ToString();
+                Config.Moderation.MuteList.Add(User.Id.ToString(), new MuteWrapper { GuildId = Context.Guild.Id.ToString(), ModeratorId = Context.User.Id.ToString(), MutedAt = DateTime.Now, Reason = reason, UnmuteTime = UnmuteTime });
+                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
                 await (User as SocketGuildUser).AddRoleAsync(Role);
             }
             else if (Config.Moderation.MuteRoleID != null || Config.Moderation.MuteRoleID != "0")
             {
 
-                var Role = Context.Guild.GetRole(Convert.ToUInt64(Context.Guild.LoadServerConfig().Moderation.MuteRoleID)) as IRole;
+                var Role = Context.Guild.GetRole(Convert.ToUInt64(Config.Moderation.MuteRoleID)) as IRole;
                 foreach (var TextChannel in (Context.Guild as SocketGuild).TextChannels)
                 {
                     if (TextChannel.PermissionOverwrites.Select(x => x.Permissions).Contains(MutePermissions) == false)
@@ -155,7 +161,8 @@ namespace Lynx.Modules
                         catch { }
                     }
                 }
-                await Context.Guild.UpdateMuteList(User, Context.User, UpdateHandler.MuteOption.Mute, UnmuteTime, reason);
+                Config.Moderation.MuteList.Add(User.Id.ToString(), new MuteWrapper { GuildId = Context.Guild.Id.ToString(), ModeratorId = Context.User.Id.ToString(), MutedAt = DateTime.Now, Reason = reason, UnmuteTime = UnmuteTime });
+                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
                 await (User as SocketGuildUser).AddRoleAsync(Role);
             }
             await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription(

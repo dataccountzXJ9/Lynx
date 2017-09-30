@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Lynx.Database;
 using Lynx.Handler;
 using Lynx.Services.Embed;
 using System;
@@ -10,13 +11,14 @@ using System.Threading.Tasks;
 
 namespace Lynx.Modules
 {
-    public class Administration : ModuleBase
+    public class Administration : ModuleBase<LynxContext>
     {
+        static GuildConfig GuildConfig = new GuildConfig();
         [Command("iam")]
         public async Task IAmAsync(IRole Role)
         {
             EventsHandler.Muted = true;
-            var Config = Context.Guild.LoadServerConfig().Moderation;
+            var Config = Context.Config.Moderation;
             if (Config.AssignableRoles.Contains(Role.Id.ToString()))
             {
                 try
@@ -40,7 +42,7 @@ namespace Lynx.Modules
         public async Task IAmnAsync(IRole Role)
         {
             EventsHandler.Unmuted = true;
-            var Config = Context.Guild.LoadServerConfig().Moderation;
+            var Config = Context.Config.Moderation;
             if (Config.AssignableRoles.Contains(Role.Id.ToString()))
             {
                 await (Context.User as SocketGuildUser).RemoveRoleAsync(Role);
@@ -56,19 +58,21 @@ namespace Lynx.Modules
         public async Task ListSelfAssignAbleRolesAsync()
         {
             int i = 0;
-            var Config = Context.Guild.LoadServerConfig().Moderation.AssignableRoles;
-            if (Config.Count == 0)
+            var Config = Context.Config;
+            var ARoles = Config.Moderation.AssignableRoles;
+            if (ARoles.Count == 0)
             {
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"**{Context.Guild.Name}'s** selfassignablelist is **empty**.").Build());
                 return;
             }
             IList<IRole> RoleList = new List<IRole>();
-            foreach (var Role in Config)
+            foreach (var Role in ARoles)
             {
                 var Role_ = Context.Guild.GetRole(Convert.ToUInt64(Role)) as IRole;
                 if (Role_ == null)
                 {
-                    await Context.Guild.UpdateServerModeration(UpdateHandler.Moderation.RemoveSelfassignableRole, Convert.ToUInt64(Role));
+                    ARoles.Remove(Role);
+                    await GuildConfig.SaveAsync(Config, Context.Guild.Id);
                     return;
                 }
                 else

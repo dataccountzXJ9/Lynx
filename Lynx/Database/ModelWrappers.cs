@@ -1,23 +1,11 @@
-﻿using System;
+﻿using Sparrow.Collections.LockFree;
+using System;
 using System.Collections.Generic;
+using System.Text;
+
 namespace Lynx.Database
 {
-    public class SConfig
-    {
-        public string Id { get; set; }
-        public string ServerPrefix { get; set; }
-        public EmbedB WelcomeMessage { get; set; } = new EmbedB();
-        public EmbedB LeaveMessage { get; set; } = new EmbedB();
-        public EventsWrapper Events { get; set; } = new EventsWrapper();
-        public ModerationWrapper Moderation { get; set; } = new ModerationWrapper();
-        //   public List<string> SongList { get; set; } = new List<string>();
-        //   public Dictionary<string, CustomReactionWrapper> CustomReactions { get; set; } = new Dictionary<string, CustomReactionWrapper>(); VERY WIP
-    }
-    // public class SongListWrapper
-    // {
-    //   public string RequestedBy { get; set; } = "0";
-    //   public string SongLink { get; set; } = "0";
-    // }
+
     public class EventsWrapper
     {
         public bool LogState { get; set; } = false;
@@ -77,6 +65,14 @@ namespace Lynx.Database
         public bool AutoAssignEnabled { get; set; } // $todo
         public string AssignRoleID { get; set; } = "0";
     }
+    public class Orbs
+    {
+        public bool IsEnabled { get; set; }
+        public int MaxLevel { get; set; } = 50;
+        public IList<string> LevelUpMessages { get; set; } = new List<string>();
+        public IList<ulong> LevelUpRoles { get; set; } = new List<ulong>();
+        public ConcurrentDictionary<string, int> UsersList { get; set; } = new ConcurrentDictionary<string, int>();
+    }
     public class MuteWrapper
     {
         public string GuildId { get; set; }
@@ -86,5 +82,17 @@ namespace Lynx.Database
         public DateTime UnmuteTime { get; set; }
     }
 }
-    
+    // public List<string> SongList { get; set; } = new List<string>();
+    // public Dictionary<string, CustomReactionWrapper> CustomReactions { get; set; } = new Dictionary<string, CustomReactionWrapper>(); VERY WIP
+
+    // public class SongListWrapper
+    // {
+    //   public string RequestedBy { get; set; } = "0";
+    //   public string SongLink { get; set; } = "0";
+    // }
+
+
+
+
+
 

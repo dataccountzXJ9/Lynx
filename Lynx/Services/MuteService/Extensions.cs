@@ -1,5 +1,9 @@
 ﻿using System;
-namespace Lynx.Services.Mute
+using Discord;
+using Discord.WebSocket;
+using System.Threading.Tasks;
+
+namespace Lynx.Services.MuteService
 {
     public static class Extensions
     {

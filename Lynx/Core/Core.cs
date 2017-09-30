@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Lynx.Database;
 using Lynx.Handler;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -11,36 +12,35 @@ namespace Lynx
     {
         static void Main(string[] args) => new Core().Start().GetAwaiter().GetResult();
         DiscordSocketClient Client;
-        CommandHandler Handler;
-        EventsHandler EHandler;
-
+        static LynxConfig LynxConfig = new LynxConfig();
         public async Task Start()
         {
+            await LynxConfig.LoadConfigAsync();
             Client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 MessageCacheSize = 500000,
                 LogLevel = LogSeverity.Verbose,
             });
-            await Client.CheckBotConfig();
-            await EventsHandler.Load();
-            await Client.LoginAsync(TokenType.Bot, Client.LoadBotConfig().BotToken);
+            ConfigureServices();
+            await Client.LoginAsync(TokenType.Bot, LynxConfig.LoadConfig.BotToken);
             await Client.StartAsync();
             Client.Log += (Log) => Task.Run(() =>
             Services.Log.CLog(Services.Source.Client, Log.Message));
-            var provider = ConfigureServices();
-            Handler = new CommandHandler(provider);
-            EHandler = new EventsHandler(provider);
-            await Handler.ConfigureAsync();
+            await MuteHandler.MuteService(Client);
             await Task.Delay(-1);
         }
-
-        IServiceProvider ConfigureServices()
+        public async void ConfigureServices()
         {
             var services = new ServiceCollection()
                 .AddSingleton(Client)
-                 .AddSingleton(new CommandService(new CommandServiceConfig { CaseSensitiveCommands = false, ThrowOnError = false }));
-            var provider = new DefaultServiceProviderFactory().CreateServiceProvider(services);
-            return provider;
+                 .AddSingleton(new CommandService(new CommandServiceConfig { DefaultRunMode = RunMode.Async }))
+                .AddSingleton<CommandHandler>()
+                .AddSingleton<LynxConfig>()
+                .AddSingleton<GuildConfig>();
+                var Provider = services.BuildServiceProvider();
+                LynxBase<LynxContext>.Provider = Provider;
+            services.AddSingleton(new EventsHandler(Provider));
+            await Provider.GetRequiredService<CommandHandler>().ConfigureAsync(Provider);
         }
     }
 }

@@ -3,7 +3,7 @@ using System;
 
 namespace Lynx.Modules
 {
-    public class Lettus : ModuleBase
+    public class Orbs : ModuleBase
     {
 
 

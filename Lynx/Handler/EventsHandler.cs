@@ -16,7 +16,9 @@ namespace Lynx.Handler
     {
         IServiceProvider provider;
         CommandService commands;
+        public static MuteHandler Mute = new MuteHandler();
         static DiscordSocketClient Client;
+        static GuildConfig GuildConfig = new GuildConfig();
         public static bool Banned = false;
         public static bool Kicked = false;
         public static bool Unmuted = false;
@@ -29,11 +31,15 @@ namespace Lynx.Handler
             commands = provider.GetService<CommandService>();
             Client.GuildAvailable += async (Guild) =>
             {
-                await Guild.CheckGuildConfig();
+                await GuildConfig.LoadOrDeleteAsync(Database.Enums.Actions.Add, Guild.Id);
             };
             Client.JoinedGuild += async (Guild) =>
             {
-                await Guild.CheckGuildConfig();
+                await GuildConfig.LoadOrDeleteAsync(Database.Enums.Actions.Add, Guild.Id);
+            };
+            Client.LeftGuild += async (Guild) =>
+            {
+                await GuildConfig.LoadOrDeleteAsync(Database.Enums.Actions.Delete, Guild.Id);
             };
             Client.UserJoined += OnUserJoin;
             Client.UserLeft += OnUserLeft;
@@ -54,44 +60,10 @@ namespace Lynx.Handler
                 await Task.CompletedTask;
             };
         }
-        static Timer Timer;
-        internal static Task Load()
-        {
-            Task.Delay(300);
-            Timer = new Timer(_ =>
-            {
-                foreach (var Guild in Client.Guilds)
-                {
-                    var Config = Guild.LoadServerConfig();
-                    var Mutelist = Config.Moderation.MuteList;
-                    Task.WhenAll(Mutelist.Select(async snc =>
-                    {
-                        if (DateTime.Now > snc.Value.UnmuteTime)
-                        {
-                            Unmuted = true;
-                            var User = Guild.GetUser(Convert.ToUInt64(snc.Key)) as SocketGuildUser;
-                            await (User as SocketGuildUser).RemoveRoleAsync((Guild.GetRole(Convert.ToUInt64(Guild.LoadServerConfig().Moderation.MuteRoleID))));
-                            await Guild.GetJoinLogChannel().SendMessageAsync($"", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**{User}** has been **unmuted** from text and voice chat.").WithFooter(x =>
-                            {
-                                x.Text = $"{User} | [Automatic Message]";
-                                x.IconUrl = User.GetAvatarUrl();
-                            }).Build());
-                            await Guild.GetLogChannel().SendMessageAsync($"", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**{User}** has been **unmuted** from text and voice chat.").WithFooter(x =>
-                            {
-                                x.Text = $"{User} | [Automatic Message]";
-                                x.IconUrl = User.GetAvatarUrl();
-                            }).Build());
-                            await Guild.UpdateMuteList(User as IUser, null, UpdateHandler.MuteOption.Unmute);
-                        }
-                    }));
-                }
-            }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
-            return Task.CompletedTask;
-        }
         internal async Task OnUserJoin(SocketUser User)
         {
             var Guild = (User as SocketGuildUser).Guild;
-            var Config = Guild.LoadServerConfig();
+            var Config = GuildConfig.LoadAsync(Guild.Id);
             if(Config.Moderation.DefaultAssignRole.AssignRoleID != "0" && Config.Moderation.DefaultAssignRole.AutoAssignEnabled == true)
             {
                 await (User as SocketGuildUser).AddRoleAsync(Guild.GetRole(Convert.ToUInt64(Config.Moderation.DefaultAssignRole.AssignRoleID)) as IRole);
@@ -115,7 +87,7 @@ namespace Lynx.Handler
             if (Banned == false)
             {
                 var Guild = (User as SocketGuildUser).Guild;
-                var Config = Guild.LoadServerConfig();
+                var Config = GuildConfig.LoadAsync(Guild.Id);
                 if (Config.Events.LogState == true && Config.Events.LogChannel == "0")
                 {
                     var LChannel = Guild.GetLogChannel();
@@ -132,7 +104,7 @@ namespace Lynx.Handler
         }
         internal async Task OnUserBanned(SocketUser User, SocketGuild Guild)
         {
-            var Config = Guild.LoadServerConfig();
+            var Config = GuildConfig.LoadAsync(Guild.Id);
             if (Config.Events.LogState == true && Config.Events.UserBan == true && Config.Events.LogChannel != "0")
             {
                 await (Guild.GetLogChannel()).SendMessageAsync("", embed: EmbedMethods.BanLogEmbed(User).Build());
@@ -140,7 +112,7 @@ namespace Lynx.Handler
         }
         internal async Task OnUserUnbanned(SocketUser User, SocketGuild Guild)
         {
-            var Config = Guild.LoadServerConfig();
+            var Config = GuildConfig.LoadAsync(Guild.Id);
             if (Config.Events.LogState == true && Config.Events.UserUnban == true && Config.Events.LogChannel != "0")
             {
                 await (Guild.GetLogChannel()).SendMessageAsync("", embed: EmbedMethods.UnbanLogEmbed(User).Build());
@@ -150,7 +122,7 @@ namespace Lynx.Handler
         {
             var UUser = (UpdatedUser as SocketGuildUser);
             var OUser = (OutdatedUser as SocketGuildUser);
-            var Config = UUser.Guild.LoadServerConfig();
+            var Config = GuildConfig.LoadAsync(UUser.Guild.Id);
             if (Config.Events.LogState == true && Config.Events.PresenceUpdate == true && Config.Events.LogChannel != "0")
             {
                 var Guild = UUser.Guild;
@@ -178,12 +150,12 @@ namespace Lynx.Handler
                     {
                         if (Unmuted == true) return;
                         var diffRoles = OUser.Roles.Where(r => !UUser.Roles.Contains(r)).Select(r => r.Name);
-                        var MuteList = Guild.LoadServerConfig().Moderation;
-                        var User_ = MuteList.MuteList.TryGetValue(UUser.Id.ToString(), out MuteWrapper Value);
+                        var MuteList = Config.Moderation.MuteList.TryGetValue(UUser.Id.ToString(), out MuteWrapper Value);
                         if (diffRoles.Contains("Lynx-Mute") && Value.UnmuteTime >= DateTime.Now)
                         {
-                            await Guild.UpdateMuteList(UpdatedUser as IUser, null, UpdateHandler.MuteOption.Unmute);
-                                await Guild.GetLogChannel().SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithAuthor(x=> { x.Name = "User force unmuted.";x.IconUrl = UUser.GetAvatarUrl(); })
+                            Config.Moderation.MuteList.Remove(UUser.Id.ToString());
+                            await GuildConfig.SaveAsync(Config, Guild.Id);
+                                 await Guild.GetLogChannel().SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithAuthor(x=> { x.Name = "User force unmuted.";x.IconUrl = UUser.GetAvatarUrl(); })
                                 .WithDescription($"**{UUser}** has been force unmuted.\n\n**Unmute at:** {DateTime.Now}\n\n").AddField(x=> { x.Name = "Mute Report:";
                                     x.Value = $"**Muted at:** {Value.MutedAt}\n" +
                                         $"**Muted until:** {Value.UnmuteTime}\n" +
@@ -202,7 +174,7 @@ namespace Lynx.Handler
         {
             var UUser = (UpdatedUser as SocketGuildUser);
             var OUser = (OutdatedUser as SocketGuildUser);
-            var Config = UUser.Guild.LoadServerConfig();
+            var Config = GuildConfig.LoadAsync(OUser.Guild.Id);
             if (Config.Events.LogState == true && Config.Events.PresenceUpdate == true && Config.Events.LogChannel != "0")
             {
                 var Guild = UUser.Guild;
@@ -230,7 +202,7 @@ namespace Lynx.Handler
             if (Before.Content == Message.Content)
                 return;
             var Guild = (Message.Author as SocketGuildUser).Guild;
-            var Config = Guild.LoadServerConfig();
+            var Config = GuildConfig.LoadAsync(Guild.Id);
             if (Config.Events.LogState == true && Config.Events.MessageUpdate == true && Config.Events.LogChannel != "0")
             {
                 await (Channel as SocketTextChannel).Guild.GetLogChannel().SendMessageAsync("", embed: EmbedMethods.MessageUpdatedEmbed(Cache, Message).Build());
@@ -243,7 +215,7 @@ namespace Lynx.Handler
             var Before = (Cache.HasValue ? Cache.Value : null) as IUserMessage;
 
             var Guild = (Cache.Value.Channel as SocketTextChannel).Guild;
-            var Config = Guild.LoadServerConfig();
+            var Config = GuildConfig.LoadAsync(Guild.Id);
             if (Config.Events.LogState == true && Config.Events.MessageDelete == true && Config.Events.LogChannel != "0")
             {
                 await (Channel as SocketTextChannel).Guild.GetLogChannel().SendMessageAsync("", embed: EmbedMethods.MessageDeletedEmbed(Cache, Before).Build());
@@ -252,7 +224,7 @@ namespace Lynx.Handler
         internal async Task OnChannelUpdated(SocketChannel OutdatedChannel, SocketChannel UpdatedChannel)
         {
             var Guild = (UpdatedChannel as SocketTextChannel).Guild;
-            var Config = Guild.LoadServerConfig();
+            var Config = GuildConfig.LoadAsync(Guild.Id);
             if (Config.Events.LogState== true && Config.Events.ChannelUpdate== true && Config.Events.LogChannel != "0")
             {
                 if((OutdatedChannel as SocketTextChannel).Name != (UpdatedChannel as SocketTextChannel).Name)
@@ -268,7 +240,7 @@ namespace Lynx.Handler
         internal async Task OnChannelDeleted(SocketChannel Channel)
         {
             var Guild = (Channel as SocketTextChannel).Guild;
-            var Config = Guild.LoadServerConfig();
+            var Config = GuildConfig.LoadAsync(Guild.Id);
             if (Config.Events.LogState == true && Config.Events.ChannelDelete == true && Config.Events.LogChannel != "0")
             {
                 var embed = new EmbedBuilder();
@@ -284,7 +256,7 @@ namespace Lynx.Handler
         internal async Task OnChannelCreated(SocketChannel Channel)
         {
             var Guild = (Channel as SocketTextChannel).Guild;
-            var Config = Guild.LoadServerConfig();
+            var Config = GuildConfig.LoadAsync(Guild.Id);
             if (Config.Events.LogState == true && Config.Events.ChannelCreate == true && Config.Events.LogChannel != "0")
             {
                 var embed = new EmbedBuilder();
@@ -299,7 +271,7 @@ namespace Lynx.Handler
         internal async Task OnRoleCreated(IRole Role)
         {
             var Guild = (Role as SocketRole).Guild;
-            var Config = Guild.LoadServerConfig();
+            var Config = GuildConfig.LoadAsync(Guild.Id);
             if (Config.Events.LogState == true && Config.Events.ChannelCreate == true && Config.Events.LogChannel != "0")
             {
                 var embed = new EmbedBuilder();
@@ -318,11 +290,12 @@ namespace Lynx.Handler
         internal async Task OnRoleDeleted(SocketRole role)
         {
             var Guild = (role as SocketRole).Guild;
-            var Config = Guild.LoadServerConfig();
+            var Config = GuildConfig.LoadAsync(Guild.Id);
             if (role.Id.ToString() == Config.Moderation.MuteRoleID)
             {
-                await Guild.UpdateServerModeration(UpdateHandler.Moderation.MuteRole);
+                Config.Moderation.MuteRoleID = "0";
                 await Guild.GetLogChannel().SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"**{role.Name}** (server mute role) has been deleted.").Build());
+                await GuildConfig.SaveAsync(Config, Guild.Id);
                 return;
             }
             if (Config.Events.LogState == true && Config.Events.ChannelCreate == true && Config.Events.LogChannel != "0")

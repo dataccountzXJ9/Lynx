@@ -14,19 +14,17 @@ using Lynx.Database;
 using System.Diagnostics;
 using Lynx.Handler;
 using Raven.Client.Documents;
-using Raven.Client.Documents.Operations;
-using Raven.Client.Documents.Session;
-
+using Raven.Client.Documents.Commands;
+using Raven.Client.Documents.Linq;
 namespace Lynx.Modules
 {
-    public class Utility : ModuleBase
+    public class Utility : ModuleBase<LynxContext>
     {
         CommandService _service;
         public Utility(CommandService service)
         {
             _service = service;
         }
-
         [Command("serverinfo")]
         public async Task ServerInfoAsync()
         {
@@ -40,7 +38,7 @@ namespace Lynx.Modules
             }
             var Description = $"**<:admin:338418960741695498> Owner:** {Guild.Owner}\n**<:users:337976192554762240> Users:** {Guild.Users.Count}\n**<:help:338419741834346498> Default Channel:** {Guild.DefaultChannel.Mention}\n\n" +
             $"**<:Discord:337975837464854530> Roles:** {Context.Guild.Roles.Count}\n" +
-            $"**<:notepad:338401542900023298> Assignableroles:** {Context.Guild.LoadServerConfig().Moderation.AssignableRoles.Count}\n" +
+            $"**<:notepad:338401542900023298> Assignableroles:** {Context.Config.Moderation.AssignableRoles.Count}\n" +
             $"**<:envelop:338011365476401173> Messages:** ({(Msgs / uptime.TotalMinutes).ToString("N2")}/minute)\n";
             await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription(Description).Build());
         }
