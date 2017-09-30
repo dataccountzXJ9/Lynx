@@ -23,7 +23,7 @@ namespace Lynx.Handler
             provider = Prov;
             Client = provider.GetService<DiscordSocketClient>();
             commands = provider.GetService<CommandService>();
-            Client.MessageReceived += async (Message) => { await HandleCommand(Message); await NSFWService.NSFWImplementation(Message); };
+            Client.MessageReceived += async (Message) => { await HandleCommand(Message); await NSFWService.NSFWImplementation(Message); await CustomReactionHandler.CustomReactionService(Message); };
         }
         public async Task ConfigureAsync(IServiceProvider Provider)
         {

@@ -125,7 +125,6 @@ namespace NSFW
                         }
                         else
                         {
-                            Console.WriteLine("null error A");
                         }
                     }
                 }
@@ -146,13 +145,12 @@ namespace NSFW
                                 await usrMsg.DeleteAsync();
                                 logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
                             }
-                            catch { }
+                            catch {}
                             return true;
                         }
                     }
                     else
                     {
-                        Console.WriteLine("null error B");
                     }
                 }
             }

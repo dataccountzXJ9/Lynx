@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace Lynx.Modules
 {
     [RequireUserPermission(GuildPermission.ManageGuild), RequireBotPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
-    public class Settings : ModuleBase<LynxContext>
+    public class Settings : LynxBase<LynxContext>
     {
         static GuildConfig GuildConfig = new GuildConfig();
         [Command("autoassign")]

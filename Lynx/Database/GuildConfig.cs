@@ -31,7 +31,7 @@ namespace Lynx.Database
                 switch (Action)
                 {
                     case Actions.Add:
-                        if (!await Session.ExistsAsync($"{GuildId}"))
+                        if (await Session.LoadAsync<ServerModel>($"{GuildId}") == null)
                         {
                             await Session.StoreAsync(
                                 new ServerModel

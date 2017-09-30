@@ -1,12 +1,11 @@
 ﻿using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Lynx.Database;
 using Lynx.Handler;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
-using NLog.Fluent;
-using System;
 using System.Threading.Tasks;
 namespace Lynx
 {
@@ -31,18 +30,20 @@ namespace Lynx
             Client.Log += (Log) => Task.Run(() =>
             logger.Log(LogLevel.Info, Log.Message));
             await MuteHandler.MuteService(Client);
+      //    await RemindMeHandler.RemindMeService(Client);
             await Task.Delay(-1);
         }
         public async void ConfigureServices()
         {
-                var services = new ServiceCollection()
-                .AddSingleton(Client)
-                .AddSingleton(new CommandService(new CommandServiceConfig { DefaultRunMode = RunMode.Async }))
-                .AddSingleton<CommandHandler>()
-                .AddSingleton<LynxConfig>()
-                .AddSingleton<GuildConfig>();
-                var Provider = services.BuildServiceProvider();
-                LynxBase<LynxContext>.Provider = Provider;
+            var services = new ServiceCollection()
+            .AddSingleton(Client)
+            .AddSingleton(new CommandService(new CommandServiceConfig { DefaultRunMode = RunMode.Async }))
+            .AddSingleton<CommandHandler>()
+            .AddSingleton<LynxConfig>()
+            .AddSingleton<GuildConfig>()
+            .AddSingleton(new InteractiveService(Client));
+            var Provider = services.BuildServiceProvider();
+            LynxBase<LynxContext>.Provider = Provider;
             services.AddSingleton(new EventsHandler(Provider));
             await Provider.GetRequiredService<CommandHandler>().ConfigureAsync(Provider);
             logger.Log(LogLevel.Info, "Services have been loaded.");

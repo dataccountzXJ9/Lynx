@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Lynx.Database;
 using Lynx.Handler;
+using Discord.WebSocket;
 
 namespace Lynx
 {

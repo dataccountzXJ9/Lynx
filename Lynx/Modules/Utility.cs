@@ -16,11 +16,14 @@ using Lynx.Handler;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Commands;
 using Raven.Client.Documents.Linq;
+using Discord.Addons.Interactive;
+
 namespace Lynx.Modules
 {
     public class Utility : ModuleBase<LynxContext>
     {
         CommandService _service;
+        GuildConfig GuildConfig = new GuildConfig();
         public Utility(CommandService service)
         {
             _service = service;
