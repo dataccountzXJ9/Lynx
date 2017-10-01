@@ -5,6 +5,8 @@ using Lynx.Models.Database;
 using Raven.Client.Documents.Session;
 using System.Threading.Tasks;
 using NLog;
+using System.Collections.Generic;
+
 namespace Lynx.Database
 {
     public class GuildConfig
@@ -33,11 +35,15 @@ namespace Lynx.Database
                     case Actions.Add:
                         if (await Session.LoadAsync<ServerModel>($"{GuildId}") == null)
                         {
+                            var CRW = new List<CustomReactionWrapper>();
+                            CRW.Add(new CustomReactionWrapper { Id = 2, Trigger = "test", Response = "-" });
+                            CRW.Add(new CustomReactionWrapper { Id = 2, Trigger = "test", Response = "-" });
                             await Session.StoreAsync(
                                 new ServerModel
                                 {
                                     Id = $"{GuildId}",
-                                    ServerPrefix = "?"
+                                    ServerPrefix = "?",
+                                    CustomReactions = CRW,
                                 }).ConfigureAwait(false);
                             logger.Info($"Config [{GuildId}] has been created succesfully.");
                         }

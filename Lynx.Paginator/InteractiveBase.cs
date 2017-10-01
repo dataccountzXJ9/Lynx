@@ -1,26 +1,19 @@
-﻿using Discord.Commands;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Discord;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Lynx.Database;
-using Lynx.Handler;
+using Discord.Commands;
 using Discord.WebSocket;
-using Lynx.Interactive;
-
-namespace Lynx
+using Discord;
+namespace Lynx.Interactive
 {
-    public class LynxBase<T> : ModuleBase<LynxContext> where T: LynxContext
+    public class InteractiveBase : InteractiveBase<SocketCommandContext>
     {
-        public static IServiceProvider Provider { get; set; }
-        protected override async Task<IUserMessage> ReplyAsync(string message, bool isTTS = false, Embed embed = null, RequestOptions options = null)
-        {
-            _ = Provider.GetRequiredService<GuildConfig>().SaveAsync(Context.Config, Context.Guild.Id);
-            _ = Provider.GetRequiredService<LynxConfig>().SaveAsync(Context.LynxConfig);
-            return await Context.Channel.SendMessageAsync(message, isTTS, embed, options);
-        }
+
+    }
+
+    public class InteractiveBase<T> : ModuleBase<T>
+        where T : SocketCommandContext
+    {
         public InteractiveService Interactive { get; set; }
 
         public Task<SocketMessage> NextMessageAsync(ICriterion<SocketMessage> criterion, TimeSpan? timeout = null)

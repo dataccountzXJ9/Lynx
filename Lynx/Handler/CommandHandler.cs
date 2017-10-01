@@ -9,6 +9,7 @@ using NSFW;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using Lynx.Database;
 
 namespace Lynx.Handler
 {

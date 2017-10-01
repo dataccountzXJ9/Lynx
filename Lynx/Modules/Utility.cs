@@ -16,7 +16,6 @@ using Lynx.Handler;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Commands;
 using Raven.Client.Documents.Linq;
-using Discord.Addons.Interactive;
 
 namespace Lynx.Modules
 {

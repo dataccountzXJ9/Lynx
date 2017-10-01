@@ -11,6 +11,12 @@ namespace Lynx.Modules
     public class BotOwner : ModuleBase<LynxContext>
     {
         static LynxConfig LynxConfig = new LynxConfig();
+        [Command("username")]
+        public async Task UserNameAsync([Remainder] string UserName)
+        {
+            await Context.Client.CurrentUser.ModifyAsync(x => x.Username = UserName);
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"Changed bot username to: **{Context.Client.CurrentUser.Username}**").Build());
+        }
         [Command("debug")]
         public async Task ToggleDebug()
         {

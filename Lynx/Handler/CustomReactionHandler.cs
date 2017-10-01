@@ -13,6 +13,8 @@ namespace Lynx.Handler
         static GuildConfig GuildConfig = new GuildConfig();
         public static async Task CustomReactionService(SocketMessage Message)
         {
+            if (Message.Author.IsBot)
+                return;
             CustomReactionWrapper Reaction = GetReaction(Message);
             await Message.Channel.SendMessageAsync(Reaction.Response);
         }
@@ -22,17 +24,19 @@ namespace Lynx.Handler
             var Guild = (Message.Channel as SocketTextChannel).Guild;
             var Config = GuildConfig.LoadAsync(Guild.Id);
             var CR_ = Config.CustomReactions.Where(cr =>
-            {
-                if (cr == null)
-                    return false;
-                return (cr.Trigger == Message_);
-            }).ToArray();
+                {
+                    if (cr == null)
+                        return false;
+                    return (cr.Trigger == Message_);
+                }).ToArray();
             CustomReactionWrapper toReturn = null;
-            if (CR_.Length != 0)
+            if (CR_?.Length != 0)
             {
                 var Reaction = CR_[new Random().Next(0, CR_.Length)];
-                if(Reaction != null)
+                if (Reaction != null)
                 {
+                    if (Reaction.Response == "-")
+                        return null;
                     toReturn = Reaction;
                 }
             }
@@ -40,3 +44,5 @@ namespace Lynx.Handler
         }
     }
 }
+    
+

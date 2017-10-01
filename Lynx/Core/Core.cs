@@ -1,9 +1,9 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Lynx.Database;
 using Lynx.Handler;
+using Lynx.Interactive;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using System.Threading.Tasks;
