@@ -19,13 +19,44 @@ using Raven.Client.Documents.Linq;
 
 namespace Lynx.Modules
 {
-    public class Utility : ModuleBase<LynxContext>
+    public class Utility : LynxBase<LynxContext>
     {
         CommandService _service;
         GuildConfig GuildConfig = new GuildConfig();
         public Utility(CommandService service)
         {
             _service = service;
+        }
+        [Command("invite")]
+        public async Task SendInviteAsync()
+        {
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("[Invite me to your server!](https://discordapp.com/oauth2/authorize?client_id=357220874560077844&scope=bot&permissions=8)")
+                .WithFooter(x=>
+                {
+                    x.IconUrl = Context.Client.CurrentUser.GetAvatarUrl();
+                    x.Text = Context.Client.CurrentUser.Username + " invite";
+                }).Build());
+        }
+        [Command("botinfo")]
+        public async Task BotInfoAsync()
+        {
+            var Info = await (Context.Client as DiscordSocketClient).GetApplicationInfoAsync();
+            var Config = Context.LynxConfig;
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithAuthor(x =>
+            {
+                x.Name = $"Hey im {Context.Client.CurrentUser.Username}";
+                x.IconUrl = Context.Client.CurrentUser.GetAvatarUrl();
+            }).WithDescription("I'm a multifunctional discord bot for useful things. Please check out my [documentation](https://www.lynxbot.cf/documentation)!")
+            .AddField(x =>
+            {
+                x.IsInline = true;
+                x.Name = "Info";
+                x.Value = $"<:developer:337976213584871434> **Developer:** `{Info.Owner}`\n<:www:337978348854575105> **Website:** [lynxbot.cf](https://www.lynxbot.cf)\n" +
+            $"<:ramusage:338007753794650113> **Ram Usage:** {GetHeapSize()} MB\n" +
+            $"<:uptime:338009832944566274> **Uptime:** {GetUptime()}\n" +
+            $"<:envelop:338011365476401173> **Messages Received:** {Config.MessagesReceived}\n"+
+            $"<:developer:337976213584871434> **Commands Fired:** {Config.CommandsTriggered}";
+            }).WithSuccesColor().Build());
         }
         [Command("serverinfo")]
         public async Task ServerInfoAsync()
@@ -55,7 +86,7 @@ namespace Lynx.Modules
             $"**<:game:338422429686824960> Game:** {game}\n" +
             $"**<:Discord:337975837464854530> Roles:** {user.Roles.Count}\n" +
             $"**<:uptime:338009832944566274> Created:** {user.CreatedAt.ToString(@"yyyy-MM-dd")}";
-            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription(description).WithThumbnailUrl(user.GetAvatarUrl()).WithFooter(x=>x.WithText($"Information about {user.Username}.").WithIconUrl(user.GetAvatarUrl())).Build());
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription(description).WithThumbnailUrl(user.GetAvatarUrl()).WithFooter(x => x.WithText($"Information about {user.Username}.").WithIconUrl(user.GetAvatarUrl())).Build());
         }
         [Command("help")]
         public async Task GetCommandHelp([Remainder] string CommandName)
@@ -64,7 +95,7 @@ namespace Lynx.Modules
             var ModuleInfo = _service.Search(Context, CommandName);
             if (!ModuleInfo.IsSuccess)
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription("Command not found.").Build());
-            foreach(var Command in ModuleInfo.Commands)
+            foreach (var Command in ModuleInfo.Commands)
             {
                 var Command_ = Command.Command;
                 string Alias = null;
@@ -87,9 +118,9 @@ namespace Lynx.Modules
         public async Task GetModulesAsync()
         {
             var Modules = string.Join("\n", _service.Modules.GroupBy(m => m.GetTopLevelModule()).Select(m => "• " + m.Key.Name).OrderBy(s => s));
-            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithFooter(x=>{ x.IconUrl = Context.Client.CurrentUser.GetAvatarUrl(); x.Text = DatabaseMethods.GetPrefix(Context.Guild as SocketGuild) +
-                "modulename to get a list of commands in that module.";
-            }).AddField(x=> { x.Name = "List of Modules:"; x.Value = Modules; }).WithSuccesColor().Build());
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithFooter(x => { x.IconUrl = Context.Client.CurrentUser.GetAvatarUrl(); x.Text = DatabaseMethods.GetPrefix(Context.Guild as SocketGuild) +
+                  "modulename to get a list of commands in that module.";
+            }).AddField(x => { x.Name = "List of Modules:"; x.Value = Modules; }).WithSuccesColor().Build());
         }
         [Command("commands"), Alias("cmds")]
         public async Task GetCommandsByModuleNameAsync([Remainder] string module)
@@ -112,8 +143,13 @@ namespace Lynx.Modules
                 Commands = Commands + Prefix + string.Join(" ", Command.Aliases.FirstOrDefault()) + "\n";
                 Alias = Alias + "[" + string.Join(", ", Command.Aliases.Skip(1)) + "]\n" ?? "[" + Prefix + string.Join(", ", Command.Aliases.Skip(1)) + "]\n";
             }
-            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithTitle(":notepad_spiral: Module Commands").WithFooter(x=> { x.Text = Context.Guild.Name;x.IconUrl = Context.Guild.IconUrl; })
-                .AddField(x=> { x.IsInline = true;x.Name = "Commands"; x.Value = Commands; }).AddField(x=> { x.IsInline = true;x.Value = Alias;x.Name = "Alias"; }).WithSuccesColor().Build());
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithTitle(":notepad_spiral: Module Commands").WithFooter(x => { x.Text = Context.Guild.Name; x.IconUrl = Context.Guild.IconUrl; })
+                .AddField(x => { x.IsInline = true; x.Name = "Commands"; x.Value = Commands; }).AddField(x => { x.IsInline = true; x.Value = Alias; x.Name = "Alias"; }).WithSuccesColor().Build());
         }
+        public static string GetUptime() => (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"hh\:mm\:ss");
+        public static string GetHeapSize() => Math.Round(GC.GetTotalMemory(true) / (1024.0 * 1024.0), 2).ToString();
     }
 }
+        
+        
+
