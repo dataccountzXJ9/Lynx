@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using Lynx.Database;
 using Lynx.Handler;
 using Lynx.Services.Embed;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 namespace Lynx.Modules
 {
     [RequireOwner]
-    public class BotOwner : ModuleBase<LynxContext>
+    public class BotOwner : LynxBase<LynxContext>
     {
         static LynxConfig LynxConfig = new LynxConfig();
         [Command("username")]

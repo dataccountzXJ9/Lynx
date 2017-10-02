@@ -19,6 +19,7 @@ namespace Lynx.Handler
         IServiceProvider provider;
         CommandService commands;
         private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static LynxConfig LynxConfig = new LynxConfig();
         public CommandHandler(IServiceProvider Prov)
         {
             provider = Prov;
@@ -34,14 +35,21 @@ namespace Lynx.Handler
         }
         public async Task HandleCommand(SocketMessage Message)
         {
+            if (Message.Author.IsBot)
+                return;
+            var Config = LynxConfig.LoadConfig;
+            Config.MessagesReceived++;
+            await LynxConfig.SaveAsync(Config);
             int argPos = 0;
             var Guild = (Message.Channel as SocketTextChannel).Guild;
             var Context = new LynxContext(Client, Message as SocketUserMessage, provider);
             if (!(Message as SocketUserMessage).HasStringPrefix(Guild.GetPrefix().ToLowerInvariant(), ref argPos)) return;
             var Result = await commands.ExecuteAsync(Context, argPos, provider);
+            Config.CommandsTriggered++;
+            await LynxConfig.SaveAsync(Config);
             if (!Result.IsSuccess)
             {
-                if (Context.LynxConfig.Debug == true)
+                if (Config.Debug == true)
                 {
                     await Context.Channel.SendMessageAsync(Result.ErrorReason);
                 }

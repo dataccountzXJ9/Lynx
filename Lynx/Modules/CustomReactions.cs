@@ -7,7 +7,6 @@ using Lynx.Services.Embed;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Lynx.Modules
@@ -20,9 +19,11 @@ namespace Lynx.Modules
             Timeout = TimeSpan.FromMinutes(60)
         };
         [Command("acr")]
+        [RequireUserPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
+        [RequireBotPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
         public async Task AddCustomReactionAsync(string Name, [Remainder] string Response)
         {
-            var Config = GuildConfig.LoadAsync(Context.Guild.Id);
+            var Config = Context.Config;
             int ID = 0;
             try
             {
@@ -35,9 +36,11 @@ namespace Lynx.Modules
             await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**I've created a custom reaction.**\n\n**ID:** `{ID}`\n**Trigger:** `{Name}`\n**Response:** `{Response}`").Build());
         }
         [Command("dcr")]
+        [RequireUserPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
+        [RequireBotPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
         public async Task DeleteCustomReactionAsync(int Id)
         {
-            var Config = GuildConfig.LoadAsync(Context.Guild.Id);
+            var Config = Context.Config;
             if (Config.CustomReactions.Where(x => x.Id == Id).Any())
             {
                 Config.CustomReactions.RemoveAll(x => x.Id == Id);
@@ -69,8 +72,6 @@ namespace Lynx.Modules
             string Page13 = null;
             string Page14 = null;
             string Page15 = null;
-            string Page16 = null;
-
             foreach (var Page in Config.CustomReactions.Take(15))
             {
                 if (Page == null)
@@ -176,13 +177,6 @@ namespace Lynx.Modules
                 Page15 += $"`#{Page.Id}` - {Page.Trigger}\n";
                 continue;
             }
-            foreach (var Page in Config.CustomReactions.Skip(225).Take(15))
-            {
-                if (Page == null)
-                    return;
-                Page16 += $"`#{Page.Id}` - {Page.Trigger}\n";
-                continue;
-            }
             List<string> Pages = new List<string>();
             if (Page1 != null)
                 Pages.Add(Page1);
@@ -214,8 +208,6 @@ namespace Lynx.Modules
                 Pages.Add(Page14);
             if (Page15 != null)
                 Pages.Add(Page15);
-            if (Page16 != null)
-                Pages.Add(Page16);
             var PaginatedMessage = new PaginatedMessage()
             {
                 Author = new Discord.EmbedAuthorBuilder()
