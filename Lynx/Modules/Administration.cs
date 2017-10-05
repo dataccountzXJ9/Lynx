@@ -23,7 +23,7 @@ namespace Lynx.Modules
             Timeout = TimeSpan.FromMinutes(60)
         };
         [Command("iam")]
-        public async Task IAmAsync(IRole Role)
+        public async Task IAmAsync([Remainder] IRole Role)
         {
             EventsHandler.Muted = true;
             var Config = Context.Config.Moderation;
@@ -47,7 +47,7 @@ namespace Lynx.Modules
             }
         }
         [Command("iamn")]
-        public async Task IAmnAsync(IRole Role)
+        public async Task IAmnAsync([Remainder] IRole Role)
         {
             EventsHandler.Unmuted = true;
             var Config = Context.Config.Moderation;
