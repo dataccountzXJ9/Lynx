@@ -16,7 +16,7 @@ using Lynx.Handler;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Commands;
 using Raven.Client.Documents.Linq;
-
+using Lynx.Interactive;
 namespace Lynx.Modules
 {
     public class Utility : LynxBase<LynxContext>
@@ -26,6 +26,18 @@ namespace Lynx.Modules
         public Utility(CommandService service)
         {
             _service = service;
+        }
+        [Command("inrole")]
+        public async Task InroleAsync([Remainder] IRole role)
+        {
+            var Guild = Context.Guild as SocketGuild;
+            IList<IUser> User_ = new List<IUser>();
+            foreach(var User in Guild.Users.Where(x=>x.Roles.Contains(role)))
+            {
+                User_.Add(User);
+            }
+            var List = string.Join(", ", User_.OrderBy(x => new Random().Next()).Take(50));
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"Inrole for **{role.Name}**```css\n{List}\n```").Build());
         }
         [Command("invite")]
         public async Task SendInviteAsync()
