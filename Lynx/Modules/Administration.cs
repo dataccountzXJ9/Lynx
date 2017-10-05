@@ -355,7 +355,7 @@ namespace Lynx.Modules
                     catch { }
                 }
                 Config.Moderation.MuteRoleID = Role.Id.ToString();
-                Config.Moderation.MuteList.Add(User.Id.ToString(), new MuteWrapper { GuildId = Context.Guild.Id.ToString(), ModeratorId = Context.User.Id.ToString(), MutedAt = DateTime.Now, Reason = reason, UnmuteTime = UnmuteTime });
+                Config.Moderation.MuteList.Add(User.Id.ToString(), new MuteWrapper { GuildId = Context.Guild.Id.ToString(), ModeratorId = Context.User.Id.ToString(), MutedAt = DateTime.Now, Reason = reason, UnmuteTime = UnmuteTime});
                 await GuildConfig.SaveAsync(Config, Context.Guild.Id);
                 await (User as SocketGuildUser).AddRoleAsync(Role);
             }
