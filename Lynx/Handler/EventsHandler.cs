@@ -19,7 +19,6 @@ namespace Lynx.Handler
         public static MuteHandler Mute = new MuteHandler();
         static DiscordSocketClient Client;
         static GuildConfig GuildConfig = new GuildConfig();
-        public static NSFW.NSFWService NSFWService = new NSFW.NSFWService();
         public static bool Banned = false;
         public static bool Kicked = false;
         public static bool Unmuted = false;
