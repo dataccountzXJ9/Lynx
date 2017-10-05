@@ -2,6 +2,8 @@
 using Discord.WebSocket;
 using Lynx.Database;
 using Lynx.Handler;
+using Lynx.Methods;
+using Lynx.Services.Embed;
 using Newtonsoft.Json;
 using NLog;
 using System;
@@ -19,6 +21,7 @@ namespace NSFW
     public class NSFWService
     {
         static LynxConfig LynxConfig = new LynxConfig();
+        static GuildConfig GuildConfig = new GuildConfig();
         static Logger logger = LogManager.GetCurrentClassLogger();
         private static async Task<bool> IsImageUrlAsync(string URL)
         {
@@ -98,7 +101,8 @@ namespace NSFW
         private static async Task<bool> NSFWFiltered(IGuild guild, SocketUserMessage usrMsg)
         {
             if ((usrMsg.Channel as SocketTextChannel).IsNsfw) return false;
-
+            var Guild = (usrMsg.Channel as SocketTextChannel).Guild;
+            var Config = GuildConfig.LoadAsync(Guild.Id);
             var message = usrMsg.Content;
             var embeds = usrMsg.Embeds;
             var attatchs = usrMsg.Attachments;
@@ -116,10 +120,14 @@ namespace NSFW
                             {
                                 try
                                 {
+                                    if (Config.Events.NSFWWarning == true && Config.Events.LogChannel != "0" && Config.Events.LogState == true)
+                                        await Guild.GetLogChannel().SendMessageAsync("", embed: EmbedMethods.NSFWLog(usrMsg).Build());
+                                    EventsHandler.NSFWDeleted = true;
                                     await usrMsg.DeleteAsync();
+                                    await usrMsg.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"{usrMsg.Author.Mention} please do not post nsfw.").Build());
                                     logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
                                 }
-                                catch { }
+                                catch(Exception e){ logger.Error(e.Message); }
                                 return true;
                             }
                         }
@@ -142,10 +150,14 @@ namespace NSFW
                         {
                             try
                             {
+                                if (Config.Events.NSFWWarning == true && Config.Events.LogChannel != "0" && Config.Events.LogState == true)
+                                    await Guild.GetLogChannel().SendMessageAsync("", embed: EmbedMethods.NSFWLog(usrMsg).Build());
+                                EventsHandler.NSFWDeleted = true;
                                 await usrMsg.DeleteAsync();
+                                await usrMsg.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"{usrMsg.Author.Mention} please do not post nsfw.").Build());
                                 logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
                             }
-                            catch {}
+                            catch (Exception e) { logger.Error(e.Message); }
                             return true;
                         }
                     }
@@ -168,10 +180,14 @@ namespace NSFW
                         {
                             try
                             {
+                                if (Config.Events.NSFWWarning == true && Config.Events.LogChannel != "0" && Config.Events.LogState == true)
+                                    await Guild.GetLogChannel().SendMessageAsync("", embed: EmbedMethods.NSFWLog(usrMsg).Build());
+                                EventsHandler.NSFWDeleted = true;
                                 await usrMsg.DeleteAsync();
+                                await usrMsg.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"{usrMsg.Author.Mention} please do not post nsfw.").Build());
                                 logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
                             }
-                            catch { }
+                            catch (Exception e) { logger.Error(e.Message); }
                             return true;
                         }
                     }
@@ -186,10 +202,14 @@ namespace NSFW
                         {
                             try
                             {
+                                if (Config.Events.NSFWWarning == true && Config.Events.LogChannel != "0" && Config.Events.LogState == true)
+                                    await Guild.GetLogChannel().SendMessageAsync("", embed: EmbedMethods.NSFWLog(usrMsg).Build());
+                                EventsHandler.NSFWDeleted = true;
                                 await usrMsg.DeleteAsync();
+                                await usrMsg.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"{usrMsg.Author.Mention} please do not post nsfw.").Build());
                                 logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
                             }
-                            catch { }
+                            catch (Exception e) { logger.Error(e.Message); }
                             return true;
                         }
                     }
@@ -203,10 +223,14 @@ namespace NSFW
                             {
                                 try
                                 {
+                                    if (Config.Events.NSFWWarning == true && Config.Events.LogChannel != "0" && Config.Events.LogState == true)
+                                        await Guild.GetLogChannel().SendMessageAsync("", embed: EmbedMethods.NSFWLog(usrMsg).Build());
+                                    EventsHandler.NSFWDeleted = true;
                                     await usrMsg.DeleteAsync();
-                                   logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
+                                    await usrMsg.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"{usrMsg.Author.Mention} please do not post nsfw.").Build());
+                                    logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
                                 }
-                                catch { }
+                                catch (Exception e) { logger.Error(e.Message); }
                                 return true;
                             }
                         }

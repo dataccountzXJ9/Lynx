@@ -19,11 +19,13 @@ namespace Lynx.Handler
         public static MuteHandler Mute = new MuteHandler();
         static DiscordSocketClient Client;
         static GuildConfig GuildConfig = new GuildConfig();
+        public static NSFW.NSFWService NSFWService = new NSFW.NSFWService();
         public static bool Banned = false;
         public static bool Kicked = false;
         public static bool Unmuted = false;
         public static bool Muted = false;
         public static bool Deleted = false;
+        public static bool NSFWDeleted = false;
         public EventsHandler(IServiceProvider Prov)
         {
             provider = Prov;
@@ -84,6 +86,11 @@ namespace Lynx.Handler
         }
         internal async Task OnUserLeft(SocketUser User)
         {
+            if(Banned == true)
+            {
+                Banned = false;
+                return;
+            }
             if (Banned == false)
             {
                 var Guild = (User as SocketGuildUser).Guild;
@@ -104,6 +111,7 @@ namespace Lynx.Handler
         }
         internal async Task OnUserBanned(SocketUser User, SocketGuild Guild)
         {
+            Banned = true;
             var Config = GuildConfig.LoadAsync(Guild.Id);
             if (Config.Events.LogState == true && Config.Events.UserBan == true && Config.Events.LogChannel != "0")
             {
@@ -142,13 +150,21 @@ namespace Lynx.Handler
                 {
                     if (OUser.Roles.Count < UUser.Roles.Count)
                     {
-                        if (Muted == true) return;
-                        var diffRoles = UUser.Roles.Where(r => !OUser.Roles.Contains(r)).Select(r => r.Name);
+                        if (Muted == true)
+                        {
+                            Muted = false;
+                            return;
+                        }
+                            var diffRoles = UUser.Roles.Where(r => !OUser.Roles.Contains(r)).Select(r => r.Name);
                         await (Guild.GetLogChannel()).SendMessageAsync("", embed: EmbedMethods.PresenceLogEmbed(OUser, UUser, EmbedMethods.Presence.UserRoleAdded, diffRoles).Build());
                     }
                     else if (OUser.Roles.Count > UUser.Roles.Count)
                     {
-                        if (Unmuted == true) return;
+                        if (Unmuted == true)
+                        {
+                            Unmuted = false;
+                            return;
+                        }
                         var diffRoles = OUser.Roles.Where(r => !UUser.Roles.Contains(r)).Select(r => r.Name);
                         var MuteList = Config.Moderation.MuteList.TryGetValue(UUser.Id.ToString(), out MuteWrapper Value);
                         if (diffRoles.Contains("Lynx-Mute") && Value.UnmuteTime >= DateTime.Now)
@@ -210,7 +226,16 @@ namespace Lynx.Handler
         }
         internal async Task OnMessageDeleted(Cacheable<IMessage, ulong> Cache, ISocketMessageChannel Channel)
         {
-            if (Deleted == true) return;
+            if (Deleted == true)
+            {
+                Deleted = false;
+                return;
+            }
+            if (NSFWDeleted == true)
+            {
+                NSFWDeleted = false;
+                return;
+            }
             if (Cache.Value.Author == Client.CurrentUser || Cache.Value.Author.IsBot == true) return;
             var Before = (Cache.HasValue ? Cache.Value : null) as IUserMessage;
 

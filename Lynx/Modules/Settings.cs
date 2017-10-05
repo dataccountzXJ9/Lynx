@@ -283,6 +283,15 @@ namespace Lynx.Modules
                 await GuildConfig.SaveAsync(Config, Context.Guild.Id);
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithDescription(State).WithSuccesColor().Build());
             }
+            [Command("nsfw")]
+            public async Task NsfwToggle()
+            {
+                var Config = Context.Config;
+                var State = Config.Events.NSFWWarning == false ? "**Started** logging **Nsfw Moderation**." : "**Stopped** logging **Nsfw Moderation**.";
+                Config.Events.NSFWWarning = !Config.Events.NSFWWarning;
+                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithDescription(State).WithSuccesColor().Build());
+            }
         }
     }
 }

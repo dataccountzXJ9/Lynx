@@ -17,6 +17,10 @@ namespace Lynx.Services.Embed
             => Embed.WithColor(Discord.Color.Red);
         static GuildConfig GuildConfig = new GuildConfig();
         static LynxConfig LynxConfig = new LynxConfig();
+        public static EmbedBuilder NSFWLog(SocketUserMessage Message)
+        {
+            return new EmbedBuilder().WithSuccesColor().WithSuccesColor().WithDescription($"**NSFW Message** has been deleted by **{Message.Author}** in **{Message.Channel.Name}** - [{Message.Channel.Id}].\n**Message content:** {Message.Content}");
+        }
         public static EmbedBuilder ShowSettingsEmbed(SocketGuild Guild)
         {
             var embed = new EmbedBuilder();
@@ -65,7 +69,8 @@ namespace Lynx.Services.Embed
                     $"**Channel Created Logs: **" + CHCreatedState + "\n" +
                     $"**Channel Deleted Logs Logs: **" + CHDeletedState + "\n" +
                     $"**Channel Updated Logs: **" + CHDUpdatedState + "\n" +
-                    $"**NSFW Warning Logs: **" + NSFWState + "\n\n" +
+                    $"**NSFW Moderation Logs: **" + NSFWState + "\n" +
+                    $"**Clarifai API Key:** Active\n\n" +
                     $"**Debug Mode:** " + DebugMode;
                 }).WithSuccesColor().WithThumbnailUrl(Guild.IconUrl);
                 embed.WithTitle($"Settings for {Guild.Name}");

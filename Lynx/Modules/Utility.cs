@@ -46,7 +46,9 @@ namespace Lynx.Modules
             {
                 x.Name = $"Hey im {Context.Client.CurrentUser.Username}";
                 x.IconUrl = Context.Client.CurrentUser.GetAvatarUrl();
-            }).WithDescription("I'm a multifunctional discord bot for useful things. Please check out my [documentation](https://www.lynxbot.cf/documentation)!")
+            }).WithDescription("I'm a multifunctional discord bot for useful things. Please check out my [documentation](https://www.lynxbot.cf/documentation)!\n" +
+            "[My GitHub repostory](https://github.com/dataccountzXJ9/Lynx)")
+            
             .AddField(x =>
             {
                 x.IsInline = true;
@@ -63,17 +65,28 @@ namespace Lynx.Modules
         {
             var Guild = Context.Guild as SocketGuild;
             int Msgs = 0;
+            string Emotes = null;
             DateTime TimeStart = Process.GetCurrentProcess().StartTime.ToUniversalTime();
             TimeSpan uptime = DateTime.UtcNow - TimeStart;
             foreach (var TextChannel in Guild.TextChannels)
             {
-                Msgs = Msgs + TextChannel.CachedMessages.Count();
+                Msgs += TextChannel.CachedMessages.Count();
             }
-            var Description = $"**<:admin:338418960741695498> Owner:** {Guild.Owner}\n**<:users:337976192554762240> Users:** {Guild.Users.Count}\n**<:help:338419741834346498> Default Channel:** {Guild.DefaultChannel.Mention}\n\n" +
-            $"**<:Discord:337975837464854530> Roles:** {Context.Guild.Roles.Count}\n" +
-            $"**<:notepad:338401542900023298> Assignableroles:** {Context.Config.Moderation.AssignableRoles.Count}\n" +
-            $"**<:envelop:338011365476401173> Messages:** ({(Msgs / uptime.TotalMinutes).ToString("N2")}/minute)\n";
-            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription(Description).Build());
+            foreach(var Emoji in Guild.Emotes)
+            {
+                Emotes += $"<:{Emoji.Name}:{Emoji.Id}>";
+            }
+            var Description = $"**<:admin:338418960741695498> Owner:** {Guild.Owner}\n**<:users:337976192554762240> Users:** {Guild.Users.Count}\n**<:channels:337976246648569856> Channels:**\n    **Text Channels:** {Guild.TextChannels.Count}\n    **Voice Channels:** {Guild.VoiceChannels.Count}\n" +
+            $"**<:roles:365518421968027649> Roles: ** {Context.Guild.Roles.Count}\n" +
+            $"**<:roles:365518421968027649> Assignableroles: ** {Context.Config.Moderation.AssignableRoles.Count}\n" +
+            $"**<:envelop:338011365476401173> Messages:** ({(Msgs / uptime.TotalMinutes).ToString("N2")}/minute)\n" +
+            $"**<:info:365515689223651340> Emojis:** ({Guild.Emotes.Count})\n{Emotes}";
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription(Description).WithFooter(x=> 
+            {
+                x.Text = Guild.Name;
+                x.IconUrl = Guild.IconUrl;
+            }
+            ).WithThumbnailUrl(Guild.IconUrl).Build());
         }
         [Command("userinfo")]
         public async Task UserInfoAsync(SocketGuildUser user = null)
