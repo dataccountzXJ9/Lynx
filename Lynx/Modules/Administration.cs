@@ -22,6 +22,11 @@ namespace Lynx.Modules
         {
             Timeout = TimeSpan.FromMinutes(60)
         };
+        [Command("customreactions")]
+        public async Task ToggleCustomReactions()
+        {
+
+        }
         [Command("iam")]
         public async Task IAmAsync([Remainder] IRole Role)
         {
@@ -53,7 +58,15 @@ namespace Lynx.Modules
             var Config = Context.Config.Moderation;
             if (Config.AssignableRoles.Contains(Role.Id.ToString()))
             {
-                await (Context.User as SocketGuildUser).RemoveRoleAsync(Role);
+                try
+                {
+                    await (Context.User as SocketGuildUser).RemoveRoleAsync(Role);
+                }
+                catch
+                {
+                    await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"I can not assign **{Role.Name}** because it is higher than my role.").Build());
+                    return;
+                }
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"You no longer have **{Role.Name}**.").Build());
             }
             else
@@ -212,7 +225,7 @@ namespace Lynx.Modules
                 Author = new Discord.EmbedAuthorBuilder()
                 {
                     IconUrl = Context.Guild.IconUrl,
-                    Name = Context.Guild.Name + " Custom Reactions",
+                    Name = Context.Guild.Name + " Self assignable roles",
                 },
                 Options = AOptions,
                 Pages = Pages,
@@ -312,6 +325,14 @@ namespace Lynx.Modules
                     $"\n**Muted at:** {Info.Reason}\n**Unmute at:** {Info.UnmuteTime.ToString("MM-dd HH:mm:ss", CultureInfo.InvariantCulture)} PM (in{Days}{Hours}{Minutes}{Seconds}).").Build());
             }
 
+        }
+        [Command("setmuterole")]
+        public async Task SetMuteRoleAsync([Remainder] IRole role)
+        {
+            var Config = Context.Config;
+            Config.Moderation.MuteRoleID = role.Id.ToString();
+            await GuildConfig.SaveAsync(Config, Context.Guild.Id);
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"Mute role has been set to: **{role.Name}**").Build());
         }
         [Command("unmute")]
         [RequireUserPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]

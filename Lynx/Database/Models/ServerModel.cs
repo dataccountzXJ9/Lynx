@@ -9,6 +9,8 @@ namespace Lynx.Models.Database
     {
         public string Id { get; set; }
         public string ServerPrefix { get; set; }
+        public bool NSFWFiltering { get; set; }
+        public bool CustomReaction { get; set; } = true;
         public EmbedB WelcomeMessage { get; set; } = new EmbedB();
         public EmbedB LeaveMessage { get; set; } = new EmbedB();
         public EventsWrapper Events { get; set; } = new EventsWrapper();

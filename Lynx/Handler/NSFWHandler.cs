@@ -103,6 +103,8 @@ namespace NSFW
             if ((usrMsg.Channel as SocketTextChannel).IsNsfw) return false;
             var Guild = (usrMsg.Channel as SocketTextChannel).Guild;
             var Config = GuildConfig.LoadAsync(Guild.Id);
+            if (Config.NSFWFiltering == false)
+                return false;
             var message = usrMsg.Content;
             var embeds = usrMsg.Embeds;
             var attatchs = usrMsg.Attachments;

@@ -16,9 +16,11 @@ namespace Lynx.Handler
     {
         IServiceProvider provider;
         CommandService commands;
+        static Timer Timer;
         public static MuteHandler Mute = new MuteHandler();
         static DiscordSocketClient Client;
         static GuildConfig GuildConfig = new GuildConfig();
+        static LynxConfig LynxConfig = new LynxConfig();
         public static NSFW.NSFWService NSFWService = new NSFW.NSFWService();
         public static bool Banned = false;
         public static bool Kicked = false;
@@ -57,10 +59,24 @@ namespace Lynx.Handler
             Client.RoleCreated += OnRoleCreated;
             Client.RoleDeleted += OnRoleDeleted;
     //      Client.RoleUpdated += OnRoleUpdated; 
-            Client.Ready += async () =>
+        }
+        internal static void StartStatusService(DiscordSocketClient Client)
+        {
+            Timer = new Timer(_ =>
             {
-                await Task.CompletedTask;
-            };
+                Task.Run(async () =>
+                {
+                    var Config = LynxConfig.LoadConfig;
+                    if (Config.BotGames.Count == 0)
+                        return;
+                    else
+                    {
+                        var RNG = new Random();
+                        var GameToPlay = RNG.Next(0, Config.BotGames.Count);
+                        await Client.SetGameAsync(Config.BotGames[GameToPlay]);
+                    }
+                });
+            }, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         }
         internal async Task OnUserJoin(SocketUser User)
         {
@@ -144,7 +160,7 @@ namespace Lynx.Handler
                 }
                 else if (OUser.Game?.Name != UUser.Game?.Name && UUser.IsBot == false)
                 {
-                    await (Guild.GetLogChannel()).SendMessageAsync("", embed: EmbedMethods.PresenceLogEmbed(OUser, UUser, EmbedMethods.Presence.Game).Build());
+             //       await (Guild.GetLogChannel()).SendMessageAsync("", embed: EmbedMethods.PresenceLogEmbed(OUser, UUser, EmbedMethods.Presence.Game).Build());
                 }
                 else if (!OUser.Roles.SequenceEqual(UUser.Roles))
                 {

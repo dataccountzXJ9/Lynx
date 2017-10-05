@@ -30,6 +30,7 @@ namespace Lynx
             Client.Log += (Log) => Task.Run(() =>
             logger.Log(LogLevel.Info, Log.Message));
             await MuteHandler.MuteService(Client);
+            EventsHandler.StartStatusService(Client);
       //    await RemindMeHandler.RemindMeService(Client);
             await Task.Delay(-1);
         }
