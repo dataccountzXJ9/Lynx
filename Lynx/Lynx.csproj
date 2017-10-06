@@ -18,6 +18,7 @@
     <PackageReference Include="Discord.Net.WebSocket" Version="2.0.0-alpha-build-00832" />
     <PackageReference Include="Google.Apis.Auth" Version="1.30.0-beta01" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.29.1.991" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="2.3.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.1.1" />
     <PackageReference Include="Microsoft.NETCore.Portable.Compatibility" Version="1.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
@@ -29,6 +30,10 @@
     <None Update="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Data\Images\" />
   </ItemGroup>
 
 </Project>

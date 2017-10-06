@@ -9,6 +9,8 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Lynx.Services.Currency;
+using NLog;
 
 namespace Lynx.Handler
 {
@@ -22,6 +24,7 @@ namespace Lynx.Handler
         static GuildConfig GuildConfig = new GuildConfig();
         static LynxConfig LynxConfig = new LynxConfig();
         public static NSFW.NSFWService NSFWService = new NSFW.NSFWService();
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         public static bool Banned = false;
         public static bool Kicked = false;
         public static bool Unmuted = false;
@@ -35,6 +38,14 @@ namespace Lynx.Handler
             commands = provider.GetService<CommandService>();
             Client.GuildAvailable += async (Guild) =>
             {
+                foreach (var User in Guild.Users)
+                {
+                    if (GuildConfig.LoadAsync(Guild.Id).Currency.UsersList.ContainsKey(User.Id.ToString()) == false)
+                    {
+                        logger.Info($"{User} has been added to the {Guild.Name}'s currency list.");
+                        await User.AddToCurrencyList();
+                    }
+                }
                 await GuildConfig.LoadOrDeleteAsync(Database.Enums.Actions.Add, Guild.Id);
             };
             Client.JoinedGuild += async (Guild) =>
@@ -69,17 +80,15 @@ namespace Lynx.Handler
                     var Config = LynxConfig.LoadConfig;
                     if (Config.BotGames.Count == 0)
                         return;
-                    else
-                    {
                         var RNG = new Random();
                         var GameToPlay = RNG.Next(0, Config.BotGames.Count);
                         await Client.SetGameAsync(Config.BotGames[GameToPlay]);
-                    }
                 });
             }, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         }
         internal async Task OnUserJoin(SocketUser User)
         {
+            await User.AddToCurrencyList();
             var Guild = (User as SocketGuildUser).Guild;
             var Config = GuildConfig.LoadAsync(Guild.Id);
             if(Config.Moderation.DefaultAssignRole.AssignRoleID != "0" && Config.Moderation.DefaultAssignRole.AutoAssignEnabled == true)
@@ -102,7 +111,8 @@ namespace Lynx.Handler
         }
         internal async Task OnUserLeft(SocketUser User)
         {
-            if(Banned == true)
+            // not removing from currency list because they always could come back!
+            if (Banned == true)
             {
                 Banned = false;
                 return;
@@ -127,6 +137,7 @@ namespace Lynx.Handler
         }
         internal async Task OnUserBanned(SocketUser User, SocketGuild Guild)
         {
+            await User.RemoveFromCurrencyList();
             Banned = true;
             var Config = GuildConfig.LoadAsync(Guild.Id);
             if (Config.Events.LogState == true && Config.Events.UserBan == true && Config.Events.LogChannel != "0")

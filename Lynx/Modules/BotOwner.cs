@@ -3,8 +3,16 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Lynx.Database;
 using Lynx.Handler;
+using Lynx.Models.Database;
 using Lynx.Services.Embed;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Lynx.Modules
@@ -13,6 +21,12 @@ namespace Lynx.Modules
     public class BotOwner : LynxBase<LynxContext>
     {
         static LynxConfig LynxConfig = new LynxConfig();
+        MemoryStream GenerateStreamFromString(string value)
+        {
+            return new MemoryStream(Encoding.Unicode.GetBytes(value ?? ""));
+        }
+        IEnumerable<Assembly> Assemblies => GetAssemblies();
+        IEnumerable<string> Imports => Context.LynxConfig.EvalImports;
         [Command("agame")]
         public async Task AddPlayingGame([Remainder] string Gamename)
         {
@@ -29,7 +43,7 @@ namespace Lynx.Modules
             await LynxConfig.SaveAsync(Config);
             await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**{Gamename}** has been removed from status games.").Build());
         }
-        [Command("Avatar")]
+        [Command("avatar")]
         public async Task AvatarAsync([Remainder] string Path)
         {
             using (var stream = new FileStream(Path, FileMode.Open))
@@ -63,6 +77,71 @@ namespace Lynx.Modules
             Config.ClarifaiAPIKey = APIKey;
             await LynxConfig.SaveAsync(Config);
             await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"Clarifai API Key has been **updated** globally.").Build());
+        }
+        [Command("Eval"), Summary("Evaluates some sort of expression for you.")]
+        public async Task EvalAsync([Remainder] string Code)
+        {
+            var Options = ScriptOptions.Default.AddReferences(Assemblies).AddImports(Imports);
+            var Globals = new Globals
+            {
+                Client = Context.Client as DiscordSocketClient,
+                Context = Context,
+                Guild = Context.Guild as SocketGuild,
+                Channel = Context.Channel as SocketGuildChannel,
+                User = Context.User as SocketGuildUser,
+                ServerConfig = Context.Config
+            };
+            try
+            {
+                var eval = await CSharpScript.EvaluateAsync(Code, Options, Globals, typeof(Globals));
+                var embed = new EmbedBuilder().WithSuccesColor().WithFooter(x => { x.IconUrl = Context.Client.CurrentUser.GetAvatarUrl(); x.Text = "Evaluated succesfully."; });
+                embed.AddField(x =>
+                {
+                    x.Name = "Input";
+                    x.Value = $"```{Code}```";
+                })
+                .AddField(x =>
+                {
+                    x.Name = "Output";
+                    x.Value = $"```{eval.ToString() ?? "No Result."}```";
+                });
+                await ReplyAsync("", embed: embed.Build());
+            }
+            catch (Exception e)
+            {
+                var embed = new EmbedBuilder().WithSuccesColor().WithFooter(x => { x.IconUrl = Context.Client.CurrentUser.GetAvatarUrl(); x.Text = "Failed to evaluate."; });
+                embed.AddField(x =>
+                {
+                    x.Name = "Input";
+                    x.Value = $"```{Code}```";
+                })
+                .AddField(x =>
+                {
+                    x.Name = "Output";
+                    x.Value = $"```{e.GetType().ToString()} : {e.Message}```";
+                });
+                await ReplyAsync("", embed: embed.Build());
+            }
+        }
+        public static IEnumerable<Assembly> GetAssemblies()
+        {
+            var Assemblies = Assembly.GetEntryAssembly().GetReferencedAssemblies();
+            foreach (var a in Assemblies)
+            {
+                var asm = Assembly.Load(a);
+                yield return asm;
+            }
+            yield return Assembly.GetEntryAssembly();
+            yield return typeof(ILookup<string, string>).GetTypeInfo().Assembly;
+        }
+        public class Globals
+        {
+            public LynxContext Context { get; internal set; }
+            public DiscordSocketClient Client { get; internal set; }
+            public SocketGuildUser User { get; internal set; }
+            public SocketGuild Guild { get; internal set; }
+            public SocketGuildChannel Channel { get; internal set; }
+            public ServerModel ServerConfig { get; internal set; }
         }
     }
 }

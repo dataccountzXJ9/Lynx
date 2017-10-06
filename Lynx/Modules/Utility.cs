@@ -27,6 +27,18 @@ namespace Lynx.Modules
         {
             _service = service;
         }
+        [Command("8ball", RunMode = RunMode.Async)]
+        public async Task AskBallAsync([Remainder] string Question)
+        {
+            string[] PossibleAnswers = new string[] { "it is certain", "it is decidedly so", "without a doubt!", "yes definitely", "you may rely on it", "as I see it, yes"
+            ,"most likely", "outlook good", "yes.", "signs point to yes", "no.", "nope", "reply hazy, try again", "ask again", "better not tell you now", "cannot predict now",
+            "concentrate and ask again", "don't count on it", "my reply is no", "my sources say no", "outlook not so good", "very doubtful"};
+            var RNG = new Random().Next(0, PossibleAnswers.Length);
+            var FinalAnswer = PossibleAnswers[RNG];
+            var toModify = await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("Asking the ball..").Build());
+            await Task.Delay(1000);
+            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(Context.User.Mention + ", " + FinalAnswer).Build());
+        }
         [Command("inrole")]
         public async Task InroleAsync([Remainder] IRole role)
         {

@@ -13,5 +13,6 @@ namespace Lynx.Models.Database
         public int MessagesReceived { get; set; }
         public int CommandsTriggered { get; set; }
         public List<string> BotGames { get; set; } = new List<string>();
+        public List<string> EvalImports { get; set; } = new List<string>();
     }
 }

@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-
+using System.Collections.Specialized;
 namespace Lynx.Database
 {
 
@@ -65,13 +65,14 @@ namespace Lynx.Database
         public bool AutoAssignEnabled { get; set; }
         public string AssignRoleID { get; set; } = "0";
     }
-    public class Orbs
+    public class Currency
     {
+        public float Chance { get; set; }
         public bool IsEnabled { get; set; }
         public int MaxLevel { get; set; } = 50;
         public IList<string> LevelUpMessages { get; set; } = new List<string>();
         public IList<ulong> LevelUpRoles { get; set; } = new List<ulong>();
-        public ConcurrentDictionary<string, int> UsersList { get; set; } = new ConcurrentDictionary<string, int>();
+        public ConcurrentDictionary<string, UserWrapper> UsersList { get; set; } = new ConcurrentDictionary<string, UserWrapper>();        
     }
     public class MuteWrapper
     {
@@ -86,6 +87,17 @@ namespace Lynx.Database
         public string Trigger { get; set; }
         public string Response { get; set; }
         public int Id { get; set; }
+    }
+    public class UserWrapper
+    {
+        public int Level { get; set; } = 1;
+        public int Karma { get; set; } = 0;
+        public int TotalKarma { get; set; }
+        public int NeededKarma { get; set; } = 1000;
+        public int Credits { get; set; }
+        public DateTime LastCredit { get; set; }
+        public int EquippedBackground { get; set; }
+        public List<string> Backgrounds { get; set; } = new List<string>();
     }
 }
     // public List<string> SongList { get; set; } = new List<string>();

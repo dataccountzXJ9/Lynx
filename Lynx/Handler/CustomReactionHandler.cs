@@ -13,8 +13,6 @@ namespace Lynx.Handler
         static GuildConfig GuildConfig = new GuildConfig();
         public static async Task CustomReactionService(SocketMessage Message)
         {
-            if (GuildConfig.LoadAsync((Message.Channel as SocketTextChannel).Guild.Id).CustomReaction == false)
-                return;
             if (Message.Author.IsBot)
                 return;
             CustomReactionWrapper Reaction = GetReaction(Message);
