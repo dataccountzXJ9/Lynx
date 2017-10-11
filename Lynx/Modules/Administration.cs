@@ -22,11 +22,6 @@ namespace Lynx.Modules
         {
             Timeout = TimeSpan.FromMinutes(60)
         };
-        [Command("customreactions")]
-        public async Task ToggleCustomReactions()
-        {
-
-        }
         [Command("iam")]
         public async Task IAmAsync([Remainder] IRole Role)
         {
@@ -270,11 +265,12 @@ namespace Lynx.Modules
                 return;
             }
         }
-        [Command("mutelist")]
+        [Command("mutelist"), Alias("mlist", "ml")]
         [RequireUserPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
         [RequireBotPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
         public async Task MuteListAsync()
         {
+            var Guild = Context.Guild as IGuild;
             var Dict = Context.Config.Moderation;
             if (Dict.MuteList.Keys.Count == 0)
             {
@@ -294,14 +290,14 @@ namespace Lynx.Modules
                     var Hours = Diff.Hours == 0 ? null : $" {Diff.Hours.ToString()} hours,";
                     var Minutes = Diff.Minutes == 0 ? null : $" {Diff.Minutes.ToString()} minutes,";
                     var Seconds = Diff.Seconds == 0 ? null : $" {Diff.Seconds.ToString()} seconds";
-                    var User = await Context.Guild.GetUserAsync(Convert.ToUInt64(X)) as IGuildUser;
+                    var User = await Guild.GetUserAsync(Convert.ToUInt64(X)) as IGuildUser;
                     UserList += User + $" [Unmuted in{Days}{Hours}{Minutes}{Seconds}]\n ";
                 }
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription(UserList).Build());
             }
         }
 
-        [Command("muteinfo")]
+        [Command("muteinfo"), Alias("minfo")]
         [RequireUserPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
         [RequireBotPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
         public async Task MuteInfoAsync(IUser user)
@@ -320,13 +316,13 @@ namespace Lynx.Modules
                 var Hours = Diff.Hours == 0 ? null : $" {Diff.Hours.ToString()} hours";
                 var Minutes = Diff.Minutes == 0 ? null : $" {Diff.Minutes.ToString()} minutes";
                 var Seconds = Diff.Seconds == 0 ? null : $" {Diff.Seconds.ToString()} seconds";
-
-                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**User:** {user}\n**Muted by:** {(await Context.Guild.GetUserAsync(Convert.ToUInt64(Info.ModeratorId)) as IUser)}" +
+                var Guild = Context.Guild as IGuild;
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**User:** {user}\n**Muted by:** {(await Guild.GetUserAsync(Convert.ToUInt64(Info.ModeratorId)) as IUser)}" +
                     $"\n**Muted at:** {Info.Reason}\n**Unmute at:** {Info.UnmuteTime.ToString("MM-dd HH:mm:ss", CultureInfo.InvariantCulture)} PM (in{Days}{Hours}{Minutes}{Seconds}).").Build());
             }
 
         }
-        [Command("setmuterole")]
+        [Command("setmuterole"), Alias("muterole")]
         public async Task SetMuteRoleAsync([Remainder] IRole role)
         {
             var Config = Context.Config;

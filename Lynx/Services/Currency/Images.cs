@@ -60,7 +60,17 @@ namespace Lynx.Services.Currency
             {
                 Pixels[y * Width + x] = clr.ToArgb();
             }
-
+            public static Bitmap Transparent2Color(Bitmap bmp1, System.Drawing.Color target)
+            {
+                Bitmap bmp2 = new Bitmap(bmp1.Width, bmp1.Height);
+                Rectangle rect = new Rectangle(Point.Empty, bmp1.Size);
+                using (Graphics G = Graphics.FromImage(bmp2))
+                {
+                    G.Clear(target);
+                    G.DrawImageUnscaledAndClipped(bmp1, rect);
+                }
+                return bmp2;
+            }
             public static void ConvertFormat(ref Bitmap bmp, PixelFormat TargetFormat = PixelFormat.Format32bppArgb)
             {
                 try

@@ -89,7 +89,7 @@ namespace NSFW
                 NSFWModel model = JsonConvert.DeserializeObject<NSFWModel>(jsonX);
 
                 var nsfwval = model.outputs.FirstOrDefault().data.concepts.Find(t => t.name == "nsfw").value;
-                if (nsfwval > 0.75)
+                if (nsfwval > 0.85)
                 {
                     return "nsfw";
                 }
@@ -100,127 +100,54 @@ namespace NSFW
 
         private static async Task<bool> NSFWFiltered(IGuild guild, SocketUserMessage usrMsg)
         {
-            if ((usrMsg.Channel as SocketTextChannel).IsNsfw) return false;
-            var Guild = (usrMsg.Channel as SocketTextChannel).Guild;
-            var Config = GuildConfig.LoadAsync(Guild.Id);
-            if (Config.NSFWFiltering == false)
-                return false;
-            var message = usrMsg.Content;
-            var embeds = usrMsg.Embeds;
-            var attatchs = usrMsg.Attachments;
-            if (embeds != null)
-            {
-                foreach (var embed in embeds)
+                if ((usrMsg.Channel as SocketTextChannel).IsNsfw) return false;
+                var Guild = (usrMsg.Channel as SocketTextChannel).Guild;
+                var Config = GuildConfig.LoadAsync(Guild.Id);
+                if (Config.NSFWFiltering == false)
+                    return false;
+                var message = usrMsg.Content;
+                var embeds = usrMsg.Embeds;
+                var attatchs = usrMsg.Attachments;
+                if (embeds != null)
                 {
-                    if (embed.Type == EmbedType.Image)
+                    foreach (var embed in embeds)
                     {
-                        var tag = ClarifaiTagging(embed.Url);
+                        if (embed.Type == EmbedType.Image)
+                        {
+                            var tag = ClarifaiTagging(embed.Url);
+
+                            if (tag != null)
+                            {
+                                if (tag == "nsfw")
+                                {
+                                    try
+                                    {
+                                        if (Config.Events.NSFWWarning == true && Config.Events.LogChannel != "0" && Config.Events.LogState == true)
+                                            await Guild.GetLogChannel().SendMessageAsync("", embed: EmbedMethods.NSFWLog(usrMsg).Build());
+                                        EventsHandler.NSFWDeleted = true;
+                                        await usrMsg.DeleteAsync();
+                                        await usrMsg.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"{usrMsg.Author.Mention} please do not post nsfw.").Build());
+                                        logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
+                                    }
+                                    catch (Exception e) { logger.Error(e.Message); }
+                                    return true;
+                                }
+                            }
+                            else
+                            {
+                            }
+                        }
+                    }
+                }
+
+                if (attatchs != null)
+                {
+                    foreach (var attatch in attatchs)
+                    {
+                        var tag = ClarifaiTagging(attatch.Url);
 
                         if (tag != null)
                         {
-                            if (tag == "nsfw")
-                            {
-                                try
-                                {
-                                    if (Config.Events.NSFWWarning == true && Config.Events.LogChannel != "0" && Config.Events.LogState == true)
-                                        await Guild.GetLogChannel().SendMessageAsync("", embed: EmbedMethods.NSFWLog(usrMsg).Build());
-                                    EventsHandler.NSFWDeleted = true;
-                                    await usrMsg.DeleteAsync();
-                                    await usrMsg.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"{usrMsg.Author.Mention} please do not post nsfw.").Build());
-                                    logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
-                                }
-                                catch(Exception e){ logger.Error(e.Message); }
-                                return true;
-                            }
-                        }
-                        else
-                        {
-                        }
-                    }
-                }
-            }
-
-            if (attatchs != null)
-            {
-                foreach (var attatch in attatchs)
-                {
-                    var tag = ClarifaiTagging(attatch.Url);
-
-                    if (tag != null)
-                    {
-                        if (tag == "nsfw")
-                        {
-                            try
-                            {
-                                if (Config.Events.NSFWWarning == true && Config.Events.LogChannel != "0" && Config.Events.LogState == true)
-                                    await Guild.GetLogChannel().SendMessageAsync("", embed: EmbedMethods.NSFWLog(usrMsg).Build());
-                                EventsHandler.NSFWDeleted = true;
-                                await usrMsg.DeleteAsync();
-                                await usrMsg.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"{usrMsg.Author.Mention} please do not post nsfw.").Build());
-                                logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
-                            }
-                            catch (Exception e) { logger.Error(e.Message); }
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                    }
-                }
-            }
-            var linkParser = new Regex(@"\b(?:https?://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            foreach (Match m in linkParser.Matches(message))
-            {
-                bool ret = await IsImageUrlAsync(m.Value);
-                if (ret == true)
-                {
-                    var tag = ClarifaiTagging(m.Value);
-
-                    if (tag != null)
-                    {
-                        if (tag == "nsfw")
-                        {
-                            try
-                            {
-                                if (Config.Events.NSFWWarning == true && Config.Events.LogChannel != "0" && Config.Events.LogState == true)
-                                    await Guild.GetLogChannel().SendMessageAsync("", embed: EmbedMethods.NSFWLog(usrMsg).Build());
-                                EventsHandler.NSFWDeleted = true;
-                                await usrMsg.DeleteAsync();
-                                await usrMsg.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"{usrMsg.Author.Mention} please do not post nsfw.").Build());
-                                logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
-                            }
-                            catch (Exception e) { logger.Error(e.Message); }
-                            return true;
-                        }
-                    }
-                }
-                else if (ret == false)
-                {
-                    bool ret1 = await IsImageUrlAsync(m.Value + ".png");
-                    if (ret1 == true)
-                    {
-                        var tag = ClarifaiTagging(m.Value + ".png");
-                        if (tag == "nsfw")
-                        {
-                            try
-                            {
-                                if (Config.Events.NSFWWarning == true && Config.Events.LogChannel != "0" && Config.Events.LogState == true)
-                                    await Guild.GetLogChannel().SendMessageAsync("", embed: EmbedMethods.NSFWLog(usrMsg).Build());
-                                EventsHandler.NSFWDeleted = true;
-                                await usrMsg.DeleteAsync();
-                                await usrMsg.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"{usrMsg.Author.Mention} please do not post nsfw.").Build());
-                                logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
-                            }
-                            catch (Exception e) { logger.Error(e.Message); }
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        bool ret2 = await IsImageUrlAsync(m.Value + ".jpg");
-                        if (ret2 == true)
-                        {
-                            var tag = ClarifaiTagging(m.Value + ".jpg");
                             if (tag == "nsfw")
                             {
                                 try
@@ -236,16 +163,90 @@ namespace NSFW
                                 return true;
                             }
                         }
-
+                        else
+                        {
+                        }
                     }
                 }
-            }
+                var linkParser = new Regex(@"\b(?:https?://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                foreach (Match m in linkParser.Matches(message))
+                {
+                    bool ret = await IsImageUrlAsync(m.Value);
+                    if (ret == true)
+                    {
+                        var tag = ClarifaiTagging(m.Value);
+
+                        if (tag != null)
+                        {
+                            if (tag == "nsfw")
+                            {
+                                try
+                                {
+                                    if (Config.Events.NSFWWarning == true && Config.Events.LogChannel != "0" && Config.Events.LogState == true)
+                                        await Guild.GetLogChannel().SendMessageAsync("", embed: EmbedMethods.NSFWLog(usrMsg).Build());
+                                    EventsHandler.NSFWDeleted = true;
+                                    await usrMsg.DeleteAsync();
+                                    await usrMsg.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"{usrMsg.Author.Mention} please do not post nsfw.").Build());
+                                    logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
+                                }
+                                catch (Exception e) { logger.Error(e.Message); }
+                                return true;
+                            }
+                        }
+                    }
+                    else if (ret == false)
+                    {
+                        bool ret1 = await IsImageUrlAsync(m.Value + ".png");
+                        if (ret1 == true)
+                        {
+                            var tag = ClarifaiTagging(m.Value + ".png");
+                            if (tag == "nsfw")
+                            {
+                                try
+                                {
+                                    if (Config.Events.NSFWWarning == true && Config.Events.LogChannel != "0" && Config.Events.LogState == true)
+                                        await Guild.GetLogChannel().SendMessageAsync("", embed: EmbedMethods.NSFWLog(usrMsg).Build());
+                                    EventsHandler.NSFWDeleted = true;
+                                    await usrMsg.DeleteAsync();
+                                    await usrMsg.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"{usrMsg.Author.Mention} please do not post nsfw.").Build());
+                                    logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
+                                }
+                                catch (Exception e) { logger.Error(e.Message); }
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            bool ret2 = await IsImageUrlAsync(m.Value + ".jpg");
+                            if (ret2 == true)
+                            {
+                                var tag = ClarifaiTagging(m.Value + ".jpg");
+                                if (tag == "nsfw")
+                                {
+                                    try
+                                    {
+                                        if (Config.Events.NSFWWarning == true && Config.Events.LogChannel != "0" && Config.Events.LogState == true)
+                                            await Guild.GetLogChannel().SendMessageAsync("", embed: EmbedMethods.NSFWLog(usrMsg).Build());
+                                        EventsHandler.NSFWDeleted = true;
+                                        await usrMsg.DeleteAsync();
+                                        await usrMsg.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"{usrMsg.Author.Mention} please do not post nsfw.").Build());
+                                        logger.Warn($"NSFW Image has been deleted in [{guild.Id} - {guild.Name}] by [{usrMsg.Author} - {usrMsg.Author.Id}]");
+                                    }
+                                    catch (Exception e) { logger.Error(e.Message); }
+                                    return true;
+                                }
+                            }
+
+                        }
+                    }
+                }
+            
 
             return false;
         }
         public static Task NSFWImplementation(SocketMessage message)
         {
-            Task.Run(async () =>
+            var _ = Task.Run(async () =>
             {
                 var guild = (message.Channel as SocketTextChannel).Guild;
                 await NSFWFiltered(guild, message as SocketUserMessage);

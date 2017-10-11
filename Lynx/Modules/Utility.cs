@@ -51,7 +51,7 @@ namespace Lynx.Modules
             var List = string.Join(", ", User_.OrderBy(x => new Random().Next()).Take(50));
             await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"Inrole for **{role.Name}**```css\n{List}\n```").Build());
         }
-        [Command("invite")]
+        [Command("invite"), Alias("inv")]
         public async Task SendInviteAsync()
         {
             await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("[Invite me to your server!](https://discordapp.com/oauth2/authorize?client_id=357220874560077844&scope=bot&permissions=8)")
@@ -61,7 +61,7 @@ namespace Lynx.Modules
                     x.Text = Context.Client.CurrentUser.Username + " invite";
                 }).Build());
         }
-        [Command("botinfo")]
+        [Command("botinfo"), Alias("stats", "binfo")]
         public async Task BotInfoAsync()
         {
             var Info = await (Context.Client as DiscordSocketClient).GetApplicationInfoAsync();
@@ -84,7 +84,7 @@ namespace Lynx.Modules
             $"<:developer:337976213584871434> **Commands Fired:** {Config.CommandsTriggered}";
             }).WithSuccesColor().Build());
         }
-        [Command("serverinfo")]
+        [Command("serverinfo"), Alias("ginfo", "sinfo")]
         public async Task ServerInfoAsync()
         {
             var Guild = Context.Guild as SocketGuild;
@@ -112,7 +112,7 @@ namespace Lynx.Modules
             }
             ).WithThumbnailUrl(Guild.IconUrl).Build());
         }
-        [Command("userinfo")]
+        [Command("userinfo"), Alias("uinfo")]
         public async Task UserInfoAsync(SocketGuildUser user = null)
         {
             if (user == null)
@@ -125,7 +125,7 @@ namespace Lynx.Modules
             $"**<:uptime:338009832944566274> Created:** {user.CreatedAt.ToString(@"yyyy-MM-dd")}";
             await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription(description).WithThumbnailUrl(user.GetAvatarUrl()).WithFooter(x => x.WithText($"Information about {user.Username}.").WithIconUrl(user.GetAvatarUrl())).Build());
         }
-        [Command("help")]
+        [Command("help"), Alias("h")]
         public async Task GetCommandHelp([Remainder] string CommandName)
         {
             var embed = new EmbedBuilder();
@@ -151,7 +151,7 @@ namespace Lynx.Modules
             }
             await Context.Channel.SendMessageAsync("", embed: embed.WithSuccesColor().Build());
         }
-        [Command("modules")]
+        [Command("modules"), Alias("moduletree")]
         public async Task GetModulesAsync()
         {
             var Modules = string.Join("\n", _service.Modules.GroupBy(m => m.GetTopLevelModule()).Select(m => "• " + m.Key.Name).OrderBy(s => s));

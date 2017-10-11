@@ -47,14 +47,14 @@ namespace Lynx.Services.Currency
                     Profile.Level++;
                     Profile.NeededKarma += 350;
                     await GuildConfig.SaveAsync(Config, User_.Guild.Id);
-                System.Drawing.Image LevelUPImage = (Bitmap)System.Drawing.Image.FromFile("Data/Images/LevelUPBase.png");
+                System.Drawing.Image LevelUPImage = (Bitmap)System.Drawing.Image.FromFile(GetBackground(User, Background.Level));
                 using (Graphics g = Graphics.FromImage(LevelUPImage))
                 {
                     System.Drawing.Image AvatarImage = null;
                     if (User.GetAvatarUrl() != null)
                     {
                         await DownloadAvatarAsync(User, 64);
-                        AvatarImage = (Bitmap)System.Drawing.Image.FromFile("Data/Images/Avatar.png");
+                        AvatarImage = (Bitmap)System.Drawing.Image.FromFile("Data/Images/Avatar.jpg");
                     }
                     else
                     {
@@ -62,11 +62,11 @@ namespace Lynx.Services.Currency
                     }
                     try
                     {
-                        System.Drawing.Color myColor = System.Drawing.Color.FromArgb(0, 0, 0);
+                        System.Drawing.Color myColor = System.Drawing.Color.FromArgb(102, 102, 102);
                         SolidBrush Black = new SolidBrush(myColor);
-                        var ResizedAvatarImage = ResizeImage(AvatarImage, 55, 53);
-                        g.DrawImage(ResizedAvatarImage, 27, 27);
-                        g.DrawString(Profile.Level++.ToString(), new Font("Arial Black", 15), Black, new PointF(46, 93));
+                        var ResizedAvatarImage = ResizeImage(AvatarImage, 49, 48);
+                        g.DrawImage(ResizedAvatarImage, 31, 25);
+                        g.DrawString(Profile.Level++.ToString(), new Font("Arial Black", 13), Black, new PointF(48, 85));
                         LevelUPImage.Save("Data/Images/LevelUpOutput.png");
                         await Channel.SendFileAsync("Data/Images/LevelUpOutput.png");
                         return;
@@ -91,7 +91,7 @@ namespace Lynx.Services.Currency
         }
         public static async Task<IUserMessage> SendProfileAsync(this IMessageChannel Channel, EmbedBuilder Builder, IUser User)
         {
-            System.Drawing.Image BackgroundImage = (Bitmap)System.Drawing.Image.FromFile("Data/Images/BudgetBackground.png");
+            System.Drawing.Image BackgroundImage = (Bitmap)System.Drawing.Image.FromFile(GetBackground(User as SocketUser, Background.Profile));
             using (Graphics g = Graphics.FromImage(BackgroundImage))
             {
                 var Config = GuildConfig.LoadAsync((User as SocketGuildUser).Guild.Id);
@@ -102,18 +102,24 @@ namespace Lynx.Services.Currency
                 if (User.GetAvatarUrl() != null)
                 {
                     await DownloadAvatarAsync(User as SocketUser, 64);
-                    AvatarImage = (Bitmap)System.Drawing.Image.FromFile("Data/Images/Avatar.png");
+                    var AvatarImage_ = (Bitmap)System.Drawing.Image.FromFile("Data/Images/Avatar.jpg");
+                    var WhiteBG = Currency.Images.LockBitsImage.Transparent2Color(AvatarImage_, System.Drawing.Color.White);
+                    // 63,64
+                    AvatarImage = ResizeImage(WhiteBG, 63, 64);
                 }
                 else
                 {
                     var AvatarImage_ = (Bitmap)System.Drawing.Image.FromFile("Data/Images/DefaultAvatar.png");
+                    // 64,64
                     AvatarImage = ResizeImage(AvatarImage_, 64, 64);
                 }
-                g.DrawImage(AvatarImage, 16, 14);
-                g.DrawString(User.Username, new Font("Arial Black", 10),Gray, new PointF(99, 10));
+                //25,18
+               
+                g.DrawImage(AvatarImage, 25, 18);
+                g.DrawString(User.Username, new Font("Arial Black", 10), Gray, new PointF(107, 12));
                 var Percentage = Profile.Karma * 100 / Profile.NeededKarma;
-                var PercentageImage = new LockBitsImage(new Bitmap(147, 27));
-                for (int i = 0; i < Percentage * 1.47; i++)
+                var PercentageImage = new LockBitsImage(new Bitmap(146, 27));
+                for (int i = 0; i < Percentage * 1.46; i++)
                 {
                     for (int j = 0; j < 21; j++)
                     {
@@ -123,7 +129,8 @@ namespace Lynx.Services.Currency
                 PercentageImage.Dispose();
                 PercentageImage.bmpSource.Save("Data/Images/Percentage.png");
                 var PercentageOutput = (Bitmap)System.Drawing.Image.FromFile("Data/Images/Percentage.png");
-                g.DrawImage(PercentageOutput, 102, 27);
+                // 111,30
+                g.DrawImage(PercentageOutput, 111, 30);
                 int o = 0;
                 int Rank = 0;
                 foreach (var User_ in Config.Currency.UsersList.OrderByDescending(x => x.Value.TotalKarma))
@@ -135,10 +142,10 @@ namespace Lynx.Services.Currency
                         break;
                     }
                 }
-                g.DrawString(Profile.Level.ToString(), new Font("Arial Black", 10), Gray, new PointF(112, 60));
-                g.DrawString(Rank.ToString(), new Font("Arial Black", 8), Gray, new PointF(211, 48));
-                g.DrawString(Profile.Credits.ToString(), new Font("Arial Black", 8), Gray, new PointF(211, 62));
-                g.DrawString($"XP: {Profile.Karma} / {Profile.NeededKarma}", new Font("Arial Black", 7), Gray, new PointF(143, 30));
+                g.DrawString(Profile.Level.ToString(), new Font("Arial Black", 10), Gray, new PointF(123, 65));
+                g.DrawString(Rank.ToString(), new Font("Arial Black", 9), Gray, new PointF(219, 52));
+                g.DrawString(Profile.Credits.ToString(), new Font("Arial Black", 9), Gray, new PointF(219, 66));
+                g.DrawString($"XP: {Profile.Karma} / {Profile.NeededKarma}", new Font("Arial Black", 7), Gray, new PointF(150, 34));
                 BackgroundImage.Save("Data/Images/Output.png");
             }
             return await Channel.SendFileAsync("Data/Images/Output.png");
@@ -152,7 +159,7 @@ namespace Lynx.Services.Currency
                 {
                     using (
                         Stream contentStream = await(await httpClient.SendAsync(request)).Content.ReadAsStreamAsync(),
-                        stream = new FileStream("Data/Images/Avatar.png", FileMode.Create, FileAccess.Write, FileShare.None))
+                        stream = new FileStream("Data/Images/Avatar.jpg", FileMode.Create, FileAccess.Write, FileShare.None))
                     {
                         await contentStream.CopyToAsync(stream);
                     }
@@ -183,7 +190,54 @@ namespace Lynx.Services.Currency
 
             return destImage;
         }
-
+        public static string GetBackground(this SocketUser User, Background Background)
+        {
+            var Config = GuildConfig.LoadAsync((User as SocketGuildUser).Guild.Id);
+            switch (Background)
+            {
+                case Background.Level:
+                    switch (Config.Currency.UsersList[User.Id.ToString()].EquippedLevelBackground)
+                    {
+                        case 1:
+                            return "Data/Images/LevelUPBackgrounds/SpaceUp.png";
+                        case 2:
+                            return "Data/Images/LevelUPBackgrounds/HeadhunterUp.png";
+                        case 3:
+                            return "Data/Images/LevelUPBackgrounds/HeadhunterUp.png";
+                        case 4:
+                            return "Data/Images/LevelUPBackgrounds/ColorfulUp.png";
+                        default:
+                            return "Data/Images/LevelUPBackgrounds/SpaceUp.png";
+                    }
+                case Background.Profile:
+                    switch (Config.Currency.UsersList[User.Id.ToString()].EquippedBackground)
+                    {
+                        case 1:
+                            return "Data/Images/ProfileBackgrounds/DefaultBackground.png";
+                        case 2:
+                            return "Data/Images/ProfileBackgrounds/ForestBackground.png";
+                        case 3:
+                            return "Data/Images/ProfileBackgrounds/HeadhunterBackground.png";
+                        case 4:
+                            return "Data/Images/ProfileBackgrounds/NighthunterBackground.png";
+                        case 5:
+                            return "Data/Images/ProfileBackgrounds/PatternBackground.png";
+                        case 6:
+                            return "Data/Images/ProfileBackgrounds/SpaceBackground.png";
+                        default:
+                            return "Data/Images/LevelUPBackgrounds/DefaultBackground.png";
+                    }
+                default:
+                    return null;
+            }
+        }
+        
+        
+        public enum Background
+        {
+            Level,
+            Profile
+        }
     }
 }
 

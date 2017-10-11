@@ -38,14 +38,17 @@ namespace Lynx.Handler
             commands = provider.GetService<CommandService>();
             Client.GuildAvailable += async (Guild) =>
             {
-                foreach (var User in Guild.Users)
+                var _ = Task.Run(async () =>
                 {
-                    if (GuildConfig.LoadAsync(Guild.Id).Currency.UsersList.ContainsKey(User.Id.ToString()) == false)
+                    foreach (var User in Guild.Users)
                     {
-                        logger.Info($"{User} has been added to the {Guild.Name}'s currency list.");
-                        await User.AddToCurrencyList();
+                        if (GuildConfig.LoadAsync(Guild.Id).Currency.UsersList.ContainsKey(User.Id.ToString()) == false)
+                        {
+                            logger.Info($"{User} has been added to the {Guild.Name}'s currency list.");
+                            await User.AddToCurrencyList();
+                        }
                     }
-                }
+                });
                 await GuildConfig.LoadOrDeleteAsync(Database.Enums.Actions.Add, Guild.Id);
             };
             Client.JoinedGuild += async (Guild) =>

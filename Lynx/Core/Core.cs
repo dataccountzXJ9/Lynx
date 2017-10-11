@@ -6,6 +6,7 @@ using Lynx.Handler;
 using Lynx.Interactive;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
+using NSFW;
 using System.Threading.Tasks;
 namespace Lynx
 {
@@ -42,7 +43,7 @@ namespace Lynx
             .AddSingleton<CommandHandler>()
             .AddSingleton<LynxConfig>()
             .AddSingleton<GuildConfig>()
-            .AddSingleton(new InteractiveService(Client));
+            .AddSingleton<InteractiveService>();
             var Provider = services.BuildServiceProvider();
             LynxBase<LynxContext>.Provider = Provider;
             services.AddSingleton(new EventsHandler(Provider));

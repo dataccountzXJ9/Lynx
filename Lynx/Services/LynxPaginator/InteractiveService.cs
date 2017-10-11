@@ -5,6 +5,7 @@ using Discord.WebSocket;
 using System.Collections.Generic;
 using Discord;
 using Lynx.Handler;
+using System.Threading;
 
 namespace Lynx.Interactive
 {
@@ -23,7 +24,6 @@ namespace Lynx.Interactive
             _callbacks = new Dictionary<ulong, IReactionCallback>();
             _defaultTimeout = defaultTimeout ?? TimeSpan.FromSeconds(15);
         }
-
         public Task<SocketMessage> NextMessageAsync(LynxContext context, bool fromSourceUser = true, bool inSourceChannel = true, TimeSpan? timeout = null)
         {
             var criterion = new Criteria<SocketMessage>();
@@ -35,6 +35,7 @@ namespace Lynx.Interactive
         }
         public async Task<SocketMessage> NextMessageAsync(LynxContext context, ICriterion<SocketMessage> criterion, TimeSpan? timeout = null)
         {
+            
             timeout = timeout ?? _defaultTimeout;
 
             var eventTrigger = new TaskCompletionSource<SocketMessage>();
@@ -46,13 +47,13 @@ namespace Lynx.Interactive
                     eventTrigger.SetResult(message);
             }
 
-            (context.Client as DiscordSocketClient).MessageReceived += Handler;
+            context.Client.MessageReceived += Handler;
 
             var trigger = eventTrigger.Task;
             var delay = Task.Delay(timeout.Value);
             var task = await Task.WhenAny(trigger, delay).ConfigureAwait(false);
 
-            (context.Client as DiscordSocketClient).MessageReceived -= Handler;
+            context.Client.MessageReceived -= Handler; // client is not null
 
             if (task == trigger)
                 return await trigger.ConfigureAwait(false);

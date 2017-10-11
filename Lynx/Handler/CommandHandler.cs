@@ -25,7 +25,10 @@ namespace Lynx.Handler
             provider = Prov;
             Client = provider.GetService<DiscordSocketClient>();
             commands = provider.GetService<CommandService>();
-            Client.MessageReceived += async (Message) => { await HandleCommand(Message); await CurrencyHandler.PotentialCurrency(Message); await NSFWService.NSFWImplementation(Message); await CustomReactionHandler.CustomReactionService(Message);};
+            Client.MessageReceived += CurrencyHandler.PotentialCurrency;
+            Client.MessageReceived += NSFWService.NSFWImplementation;
+            Client.MessageReceived += CustomReactionHandler.CustomReactionService;
+            Client.MessageReceived += HandleCommand;
         }
         public async Task ConfigureAsync(IServiceProvider Provider)
         {
@@ -33,17 +36,16 @@ namespace Lynx.Handler
             await commands.AddModulesAsync(Assembly.GetEntryAssembly());
             logger.Info("Modules have been initialized.");
         }
+                
         public async Task HandleCommand(SocketMessage Message)
         {
-            if (Message.Author.IsBot)
-                return;
             var Config = LynxConfig.LoadConfig;
             Config.MessagesReceived++;
             await LynxConfig.SaveAsync(Config);
             int argPos = 0;
             var Guild = (Message.Channel as SocketTextChannel).Guild;
-            var Context = new LynxContext(Client, Message as SocketUserMessage, provider);
             if (!(Message as SocketUserMessage).HasStringPrefix(Guild.GetPrefix().ToLowerInvariant(), ref argPos)) return;
+            var Context = new LynxContext(Client, Message as SocketUserMessage, provider);
             var Result = await commands.ExecuteAsync(Context, argPos, provider);
             Config.CommandsTriggered++;
             await LynxConfig.SaveAsync(Config);

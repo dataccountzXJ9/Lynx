@@ -11,12 +11,16 @@ namespace Lynx.Handler
     public class CustomReactionHandler
     {
         static GuildConfig GuildConfig = new GuildConfig();
-        public static async Task CustomReactionService(SocketMessage Message)
+        public static Task CustomReactionService(SocketMessage Message)
         {
-            if (Message.Author.IsBot)
-                return;
-            CustomReactionWrapper Reaction = GetReaction(Message);
-            await Message.Channel.SendMessageAsync(Reaction.Response);
+            var _ = Task.Run(async () =>
+            {
+                if (Message.Author.IsBot)
+                    return;
+                CustomReactionWrapper Reaction = GetReaction(Message);
+                await Message.Channel.SendMessageAsync(Reaction.Response);
+            });
+            return Task.CompletedTask;
         }
         public static CustomReactionWrapper GetReaction(SocketMessage Message)
         {
@@ -24,11 +28,11 @@ namespace Lynx.Handler
             var Guild = (Message.Channel as SocketTextChannel).Guild;
             var Config = GuildConfig.LoadAsync(Guild.Id);
             var CR_ = Config.CustomReactions.Where(cr =>
-                {
-                    if (cr == null)
-                        return false;
-                    return (cr.Trigger == Message_);
-                }).ToArray();
+            {
+                if (cr == null)
+                    return false;
+                return (cr.Trigger == Message_);
+            }).ToArray();
             CustomReactionWrapper toReturn = null;
             if (CR_?.Length != 0)
             {
@@ -44,5 +48,3 @@ namespace Lynx.Handler
         }
     }
 }
-    
-

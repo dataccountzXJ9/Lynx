@@ -70,6 +70,7 @@ namespace Lynx.Database
         public float Chance { get; set; }
         public bool IsEnabled { get; set; }
         public int MaxLevel { get; set; } = 50;
+        public List<string> BlackListedChannels { get; set; } = new List<string>();
         public IList<string> LevelUpMessages { get; set; } = new List<string>();
         public IList<ulong> LevelUpRoles { get; set; } = new List<ulong>();
         public ConcurrentDictionary<string, UserWrapper> UsersList { get; set; } = new ConcurrentDictionary<string, UserWrapper>();        
@@ -96,7 +97,8 @@ namespace Lynx.Database
         public int NeededKarma { get; set; } = 1000;
         public int Credits { get; set; }
         public DateTime LastCredit { get; set; }
-        public int EquippedBackground { get; set; }
+        public int EquippedBackground { get; set; } = 1;
+        public int EquippedLevelBackground { get; set; } = 1;
         public List<string> Backgrounds { get; set; } = new List<string>();
     }
 }

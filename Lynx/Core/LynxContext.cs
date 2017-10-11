@@ -11,26 +11,32 @@ namespace Lynx.Handler
 {
     public class LynxContext : ICommandContext
     {
-        public IUser User { get; }
-        public IGuild Guild { get; }
-        public IUserMessage Message { get; }
-        public IDiscordClient Client { get; }
-        public IMessageChannel Channel { get; }
+        public DiscordSocketClient Client { get; }
+        public SocketGuild Guild { get; }
+        public ISocketMessageChannel Channel { get; }
+        public SocketUser User { get; }
+        public SocketUserMessage Message { get; }
+
         public ServerModel Config { get; set; }
         public LynxModel LynxConfig { get; set; }
         static LynxConfig LynxConfig_ = new LynxConfig();
         private IServiceProvider Provider;
 
-        public LynxContext(IDiscordClient DiscordClient, IUserMessage UserMessage, IServiceProvider ServiceProvider)
+        public LynxContext(DiscordSocketClient DiscordClient, SocketUserMessage UserMessage, IServiceProvider ServiceProvider)
         {
             Provider = ServiceProvider;
             User = UserMessage.Author;
-            Guild = (UserMessage.Channel as IGuildChannel).Guild;
+            Guild = (UserMessage.Channel as SocketTextChannel).Guild;
             Message = UserMessage;
             Client = DiscordClient;
             Channel = UserMessage.Channel;
             Config = Provider.GetRequiredService<GuildConfig>().LoadAsync(Guild.Id);
             LynxConfig = LynxConfig_.LoadConfig;
         }
+        IDiscordClient ICommandContext.Client => Client;
+        IGuild ICommandContext.Guild => Guild;
+        IMessageChannel ICommandContext.Channel => Channel;
+        IUser ICommandContext.User => User;
+        IUserMessage ICommandContext.Message => Message;
     }
 }

@@ -27,7 +27,7 @@ namespace Lynx.Modules
         }
         IEnumerable<Assembly> Assemblies => GetAssemblies();
         IEnumerable<string> Imports => Context.LynxConfig.EvalImports;
-        [Command("agame")]
+        [Command("addgame"), Alias("agame")]
         public async Task AddPlayingGame([Remainder] string Gamename)
         {
             var Config = Context.LynxConfig;
@@ -35,7 +35,7 @@ namespace Lynx.Modules
             await LynxConfig.SaveAsync(Config);
             await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**{Gamename}** has been added to status games.").Build());
         }
-        [Command("rgame")]
+        [Command("removegame"), Alias("rgame")]
         public async Task RemovePlayingGame([Remainder] string Gamename)
         {
             var Config = Context.LynxConfig;
@@ -43,7 +43,7 @@ namespace Lynx.Modules
             await LynxConfig.SaveAsync(Config);
             await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**{Gamename}** has been removed from status games.").Build());
         }
-        [Command("avatar")]
+        [Command("avatar"), Alias("avi", "botavatar")]
         public async Task AvatarAsync([Remainder] string Path)
         {
             using (var stream = new FileStream(Path, FileMode.Open))
@@ -54,7 +54,7 @@ namespace Lynx.Modules
             }
             await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("Avatar has been updated.").Build());
         }
-        [Command("username")]
+        [Command("username"), Alias("botusername")]
         public async Task UserNameAsync([Remainder] string UserName)
         {
             await Context.Client.CurrentUser.ModifyAsync(x => x.Username = UserName);
@@ -69,7 +69,7 @@ namespace Lynx.Modules
             await LynxConfig.SaveAsync(Config);
             await ReplyAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**Debug Mode** has been succesfully turned **{State}**.").Build());
         }
-        [Command("clarifaiapi")]
+        [Command("clarifaiapi"), Alias("capi")]
         public async Task SetClarifaiApi(string APIKey)
         {
             await Context.Message.DeleteAsync();

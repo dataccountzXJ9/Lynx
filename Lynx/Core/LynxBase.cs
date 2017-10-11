@@ -17,8 +17,6 @@ namespace Lynx
         public static IServiceProvider Provider { get; set; }
         protected override async Task<IUserMessage> ReplyAsync(string message, bool isTTS = false, Embed embed = null, RequestOptions options = null)
         {
-            _ = Provider.GetRequiredService<GuildConfig>().SaveAsync(Context.Config, Context.Guild.Id);
-            _ = Provider.GetRequiredService<LynxConfig>().SaveAsync(Context.LynxConfig);
             return await Context.Channel.SendMessageAsync(message, isTTS, embed, options);
         }
         public InteractiveService Interactive { get; set; }

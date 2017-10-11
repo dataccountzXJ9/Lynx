@@ -16,7 +16,7 @@ namespace Lynx.Modules
     public class Settings : LynxBase<LynxContext>
     {
         static GuildConfig GuildConfig = new GuildConfig();
-        [Command("autoassign")]
+        [Command("autoassign"), Alias("aassign")]
         public async Task GuildSettingsAsync([Remainder] IRole role = null)
         {
             var Config = Context.Config;
@@ -45,7 +45,7 @@ namespace Lynx.Modules
 
             }
         }
-        [Command("settings")]
+        [Command("settings"), Alias("serversettings")]
         public async Task GuildSettingsAsync()
         {
             await Context.Channel.SendMessageAsync("", embed: EmbedMethods.ShowSettingsEmbed(Context.Guild as SocketGuild).Build());
@@ -69,11 +69,11 @@ namespace Lynx.Modules
             await Context.Channel.SendMessageAsync("", embed: EmbedMethods.GetWelcomeEmbed(Context.Guild.Id, Context.User as SocketUser).Build());
         }
 
-        [Group("Joinsettings")]
+        [Group("Joinsettings"), Alias("joinmessage")]
         [RequireUserPermission(GuildPermission.ManageGuild), RequireBotPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
         public class JoinSettings : ModuleBase<LynxContext>
         {
-            [Command("thumbnail")]
+            [Command("thumbnail"), Alias("thumb")]
             public async Task JoinThumbnail(string Url = null)
             {
                 var Config = Context.Config;
@@ -97,13 +97,13 @@ namespace Lynx.Modules
                 await GuildConfig.SaveAsync(Config, Context.Guild.Id);
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("**Join Message Description set to:** " + Description).Build());
             }
-            [Command("imageurl")]
+            [Command("imageurl"), Alias("image")]
             public async Task JoinImage(string Url = null)
             {
                 var Config = Context.Config;
                 Config.WelcomeMessage.ImageURL = Url;
                 await GuildConfig.SaveAsync(Config, Context.Guild.Id);
-                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("**Join Message Image set to the current server picture.**").Build());
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"**Join Message Image set to:** {Url}").Build());
             }
             [Command("color")]
             public async Task JoinColor(string HexColor)
@@ -117,7 +117,7 @@ namespace Lynx.Modules
             [Group("author")]
             public class Author : ModuleBase<LynxContext>
             {
-                [Command("name")]
+                [Command("name"), Alias("text")]
                 public async Task AuthorWithName([Remainder] string Name)
                 {
                     var Config = Context.Config;
@@ -125,7 +125,7 @@ namespace Lynx.Modules
                     await GuildConfig.SaveAsync(Config, Context.Guild.Id);
                     await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("**Join Message Author Name set to:** " + Name).Build());
                 }
-                [Command("icon")]
+                [Command("icon"), Alias("image")]
                 public async Task AuthorWithIcon(string Url)
                 {
                     var Config = Context.Config;
@@ -137,7 +137,7 @@ namespace Lynx.Modules
             [Group("footer")]
             public class Footer : ModuleBase<LynxContext>
             {
-                [Command("name")]
+                [Command("name"), Alias("text")]
                 public async Task FooterWithName([Remainder] string Name)
                 {
                     var Config = Context.Config;
@@ -145,7 +145,7 @@ namespace Lynx.Modules
                     await GuildConfig.SaveAsync(Config, Context.Guild.Id);
                     await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("**Join Message Footer Name set to:** " + Name).Build());
                 }
-                [Command("icon")]
+                [Command("icon"), Alias("image")]
                 public async Task FooterWithIcon(string Url)
                 {
 
@@ -172,7 +172,7 @@ namespace Lynx.Modules
                 await GuildConfig.SaveAsync(Config, Context.Guild.Id);
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription(State).Build());
             }
-            [Command("join")]
+            [Command("join"), Alias("joinmessages")]
             public async Task JoinToggle()
             {
                 var Config = Context.Config;
@@ -181,7 +181,7 @@ namespace Lynx.Modules
                 await GuildConfig.SaveAsync(Config, Context.Guild.Id);
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithDescription(State).WithSuccesColor().Build());
             }
-            [Command("leave")]
+            [Command("leave"), Alias("leavemessages")]
             public async Task LeaveToggle()
             {
                 var Config = Context.Config;
@@ -190,7 +190,7 @@ namespace Lynx.Modules
                 await GuildConfig.SaveAsync(Config, Context.Guild.Id);
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithDescription(State).WithSuccesColor().Build());
             }
-            [Command("presenceupdate")]
+            [Command("presenceupdate"), Alias("pu")]
             public async Task PresenceUpdatedToggle()
             {
                 var Config = Context.Config;
@@ -199,7 +199,7 @@ namespace Lynx.Modules
                 await GuildConfig.SaveAsync(Config, Context.Guild.Id);
                 await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithDescription(State).WithSuccesColor().Build());
             }
-            [Command("statuspresenceupdate")]
+            [Command("statuspresenceupdate"), Alias("spu")]
             public async Task StatusPresenceUpdatedToggle()
             {
                 var Config = Context.Config;
