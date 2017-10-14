@@ -84,23 +84,375 @@ namespace Lynx.Modules
             }
 
         }
+        [Command("equip")]
+        public async Task Equip(string BG)
+        {
+            var Config = Context.Config;
+            var UserInfo = Config.Currency.UsersList[Context.User.Id.ToString()];
+            if (UserInfo.Backgrounds.Owned.Contains(GetIDByBGName(BG)) == true)
+            {
+                UserInfo.Backgrounds.EquippedBackground = Convert.ToInt16(GetIDByBGName(BG));
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"You now have {BG.ToUpperInvariant()} equipped.").Build());
+                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
+            }
+            else if(UserInfo.Backgrounds.NotOwned.Contains(GetIDByBGName(BG)) == true)
+            {
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"You do not own {BG.ToUpperInvariant()}.").Build());
+            }
+        }
         [Command("shop", RunMode = RunMode.Async)]
         public async Task ShopAsync()
         {
-            var toModify = await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"Type **1** for profile backgrounds\nType **2** for levelup backgrounds").Build());
-            var Type = await NextMessageAsync(timeout: TimeSpan.FromSeconds(30));
-            if (Type != null)
+            await Context.Channel.SendShopAsync(Context.User, Context.Client as DiscordSocketClient);           
+        }
+        [Command("listownedbackgrounds"), Alias("lbg")]
+        public async Task ListOwnedBackgrounds()
+        {
+            var Config = Context.Config.Currency.UsersList[Context.User.Id.ToString()];
+            string BGs = null;
+            foreach(var BG in Config.Backgrounds.Owned)
             {
-                switch (Type.Content)
-                {
-                    case "1":
-                        await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription("Type the name of the profile background you want to purchase.").Build());
-                        
+                BGs += "• " +  GetNameByBGID(BG) + "\n";
+            }
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithDescription(BGs).WithSuccesColor().Build());
+        }
+        [Command("buy", RunMode = RunMode.Async)]
+        public async Task BuyAsync(string Background = null)
+        {
+            if (Background == null)
+            {
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription($"Background **cannot** be <null>. **Please specify a background**. You can see all the available backgrounds in your personal shop by typing **{DatabaseMethods.GetPrefix(Context.Guild)}shop**").Build());
+                return;
+            }
+            var Config = Context.Config;
+            var UserInfo = Config.Currency.UsersList[Context.User.Id.ToString()];
+            switch(Background.ToLowerInvariant())
+            {
+                case "ab":
+                    if (UserInfo.Backgrounds.Owned.Contains("8") == false)
+                    {
+                        if (UserInfo.Credits >= 1350 || UserInfo.Credits > 1350)
+                        {
+                            UserInfo.Credits -= 1350;
+                            UserInfo.Backgrounds.Owned.Add("8");
+                            UserInfo.Backgrounds.NotOwned.Remove("8");
+                            UserInfo.Backgrounds.EquippedBackground = 8;
+                            var toModify = await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("You are about to purchase Abstract Background, are you sure? (Y/n)").Build());
+                            var toReceive =await NextMessageAsync();
+                            if (toReceive.Content.ToLowerInvariant() == "y")
+                            {
+                                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"\").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"|").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"/").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(":credit_card: payment complete.").Build());
+                            }
+                            else
+                                return;
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"You do not have enough credits to buy Abstact Background.");
+                        }
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription("You already own Abstact Background").Build());
+                    }
+                    break;
+                case "fb":
+                    if (UserInfo.Backgrounds.Owned.Contains("2") == false)
+                    {
+                        if (UserInfo.Credits >= 2000 || UserInfo.Credits > 2000)
+                        {
+                            UserInfo.Credits -= 2000;
+                            UserInfo.Backgrounds.Owned.Add("2");
+                            UserInfo.Backgrounds.NotOwned.Remove("2");
+                            UserInfo.Backgrounds.EquippedBackground = 2;
+                            var toModify = await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("You are about to purchase Forest Background, are you sure? (Y/n)").Build());
+                            var toReceive = await NextMessageAsync();
+                            if (toReceive.Content.ToLowerInvariant() == "y")
+                            {
+                                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"\").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"|").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"/").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(":credit_card: payment complete.").Build());
+                            }
+                            else
+                                return;
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"You do not have enough credits to buy Forest Background.");
+                        }
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription("You already own Forest Background").Build());
+                    }
+                    break;
+                case "ff":
+                    if (UserInfo.Backgrounds.Owned.Contains("10") == false)
+                    {
+                        if (UserInfo.Credits >= 2000 || UserInfo.Credits > 2000)
+                        {
+                            UserInfo.Credits -= 2000;
+                            UserInfo.Backgrounds.Owned.Add("10");
+                            UserInfo.Backgrounds.NotOwned.Remove("10");
+                            UserInfo.Backgrounds.EquippedBackground = 10;
+                            var toModify = await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("You are about to purchase Flower Field Background, are you sure? (Y/n)").Build());
+                            var toReceive = await NextMessageAsync();
+                            if (toReceive.Content.ToLowerInvariant() == "y")
+                            {
+                                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"\").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"|").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"/").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(":credit_card: payment complete.").Build());
+                            }
+                            else
+                                return;
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"You do not have enough credits to buy Flower Field Background.");
+                        }
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription("You already own Flower Field Background").Build());
+
+                    }
                         break;
-                    case "2":
-                        await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription("Type the name of the levelup background you want to purchase.").Build());
-                        break;
-                }
+                case "hh":
+                    if (UserInfo.Backgrounds.Owned.Contains("3") == false)
+                    {
+                        if (UserInfo.Credits >= 3500 || UserInfo.Credits > 3500)
+                        {
+                            UserInfo.Credits -= 3500;
+                            UserInfo.Backgrounds.Owned.Add("3");
+                            UserInfo.Backgrounds.NotOwned.Remove("3");
+                            UserInfo.Backgrounds.EquippedBackground = 3;
+                            var toModify = await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("You are about to purchase Headhunter Background, are you sure? (Y/n)").Build());
+                            var toReceive = await NextMessageAsync();
+                            if (toReceive.Content.ToLowerInvariant() == "y")
+                            {
+                                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"\").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"|").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"/").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(":credit_card: payment complete.").Build());
+                            }
+                            else
+                                return;
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"You do not have enough credits to buy Headhunter Background.");
+                        }
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription("You already own Headhunter Background").Build());
+
+                    }
+                    break;
+                case "nh":
+                    if (UserInfo.Backgrounds.Owned.Contains("4") == false)
+                    {
+                        if (UserInfo.Credits >= 3000 || UserInfo.Credits > 3000)
+                        {
+                            UserInfo.Credits -= 3000;
+                            UserInfo.Backgrounds.Owned.Add("4");
+                            UserInfo.Backgrounds.NotOwned.Remove("4");
+                            UserInfo.Backgrounds.EquippedBackground = 4;
+                            var toModify = await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("You are about to purchase Nighthunter Background, are you sure? (Y/n)").Build());
+                            var toReceive = await NextMessageAsync();
+                            if (toReceive.Content.ToLowerInvariant() == "y")
+                            {
+                                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"\").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"|").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"/").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(":credit_card: payment complete.").Build());
+                            }
+                            else
+                                return;
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"You do not have enough credits to buy Nighthunter Background.");
+                        }
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription("You already own Nighthunter Background").Build());
+
+                    }
+                    break;
+                case "pb":
+                    if (UserInfo.Backgrounds.Owned.Contains("5") == false)
+                    {
+                        if (UserInfo.Credits >= 1250 || UserInfo.Credits > 1250)
+                        {
+                            UserInfo.Credits -= 1250;
+                            UserInfo.Backgrounds.Owned.Add("5");
+                            UserInfo.Backgrounds.NotOwned.Remove("5");
+                            UserInfo.Backgrounds.EquippedBackground = 5;
+                            var toModify = await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("You are about to purchase Pattern Background, are you sure? (Y/n)").Build());
+                            var toReceive = await NextMessageAsync();
+                            if (toReceive.Content.ToLowerInvariant() == "y")
+                            {
+                                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"\").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"|").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"/").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(":credit_card: payment complete.").Build());
+                            }
+                            else
+                                return;
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"You do not have enough credits to buy Pattern Background.");
+                        }
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription("You already own Pattern Background").Build());
+
+                    }
+                    break;
+                case "rs":
+                    if (UserInfo.Backgrounds.Owned.Contains("7") == false)
+                    {
+
+                        if (UserInfo.Credits >= 2000 || UserInfo.Credits > 2000)
+                        {
+                            UserInfo.Credits -= 2000;
+                            UserInfo.Backgrounds.Owned.Add("7");
+                            UserInfo.Backgrounds.NotOwned.Remove("7");
+                            UserInfo.Backgrounds.EquippedBackground = 7;
+
+                            var toModify = await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("You are about to purchase RedSky Background, are you sure? (Y/n)").Build());
+                            var toReceive = await NextMessageAsync();
+                            if (toReceive.Content.ToLowerInvariant() == "y")
+                            {
+                                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"\").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"|").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"/").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(":credit_card: payment complete.").Build());
+                            }
+                            else
+                                return;
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"You do not have enough credits to buy RedSky Background.");
+                        }
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription("You already own RedSky Background").Build());
+
+                    }
+                    break;
+                case "sb":
+                    if (UserInfo.Backgrounds.Owned.Contains("11") == false)
+                    {
+                        if (UserInfo.Credits >= 1750 || UserInfo.Credits > 1750)
+                        {
+                            UserInfo.Credits -= 1750;
+                            UserInfo.Backgrounds.Owned.Add("11");
+                            UserInfo.Backgrounds.NotOwned.Remove("11");
+                            UserInfo.Backgrounds.EquippedBackground = 11;
+                            var toModify = await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("You are about to purchase Stairs Background, are you sure? (Y/n)").Build());
+                            var toReceive = await NextMessageAsync();
+                            if (toReceive.Content.ToLowerInvariant() == "y")
+                            {
+                                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"\").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"|").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"/").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(":credit_card: payment complete.").Build());
+                            }
+                            else
+                                return;
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"You do not have enough credits to buy Stairs Background.");
+                        }
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription("You already own Stairs Background").Build());
+
+                    }
+                    break;
+                case "sf":
+                    if (UserInfo.Backgrounds.Owned.Contains("9") == false)
+                    {
+                        if (UserInfo.Credits >= 2000 || UserInfo.Credits > 2000)
+                        {
+                            UserInfo.Credits -= 2000;
+                            UserInfo.Backgrounds.Owned.Add("9");
+                            UserInfo.Backgrounds.NotOwned.Remove("9");
+                            UserInfo.Backgrounds.EquippedBackground = 9;
+                            var toModify = await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("You are about to purchase SunnyForest Background, are you sure? (Y/n)").Build());
+                            var toReceive = await NextMessageAsync();
+                            if (toReceive.Content.ToLowerInvariant() == "y")
+                            {
+                                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"\").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"|").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"/").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(":credit_card: payment complete.").Build());
+                            }
+                            else
+                                return;
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"You do not have enough credits to buy SunnyForest Background.");
+                        }
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription("You already own SunnyForest Background").Build());
+
+                    }
+                    break;
+                case "spb":
+                    if (UserInfo.Backgrounds.Owned.Contains("6") == false)
+                    {
+                        if (UserInfo.Credits >= 1500 || UserInfo.Credits > 1500)
+                        {
+                            UserInfo.Credits -= 1500;
+                            UserInfo.Backgrounds.Owned.Add("6");
+                            UserInfo.Backgrounds.NotOwned.Remove("6");
+                            UserInfo.Backgrounds.EquippedBackground = 6;
+                            var toModify = await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("You are about to purchase Space Background, are you sure? (Y/n)").Build());
+                            var toReceive = await NextMessageAsync();
+                            if (toReceive.Content.ToLowerInvariant() == "y")
+                            {
+                                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"\").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"|").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(@"/").Build());
+                                await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription(":credit_card: payment complete.").Build());
+                            }
+                            else
+                                return;
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"You do not have enough credits to buy Space Background.");
+                        }
+                    }
+                    break;
             }
         }
         [RequireUserPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
@@ -112,7 +464,7 @@ namespace Lynx.Modules
                 Channel = Context.Channel as ITextChannel;
             var Config = Context.Config;
             Config.Currency.BlackListedChannels.Add(Channel.Id.ToString());
-            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"I've blacklisted {Channel.Mention}, users can no longer gain XP in there.").WithFooter(x =>
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"I've blacklisted {Channel.Mention}, users can no longer gain XP in {Channel.Mention}").WithFooter(x =>
             {
                 x.IconUrl = Context.Guild.IconUrl;
                 x.Text = "Blacklisted " + Channel.Name;
@@ -223,6 +575,66 @@ namespace Lynx.Modules
                 }).Build());
             }
             await GuildConfig.SaveAsync(Config, Context.Guild.Id);
+        }
+        public string GetNameByBGID(string ID)
+        {
+            switch(ID)
+            {
+                case "1":
+                    return "Default";
+                case "2":
+                    return "FB";
+                case "3":
+                    return "HH";
+                case "4":
+                    return "NH";
+                case "5":
+                    return "PB";
+                case "6":
+                    return "SPB";
+                case "7":
+                    return "RS";
+                case "8":
+                    return "AB";
+                case "9":
+                    return "SF";
+                case "10":
+                    return "FF";
+                case "11":
+                    return "SB";
+                default:
+                    return null;
+            }
+        }
+        public string GetIDByBGName(string Name)
+        {
+            switch (Name.ToUpperInvariant())
+            {
+                case "DEFAULT":
+                    return "1";
+                case "FB":
+                    return "2";
+                case "HH":
+                    return "3";
+                case "NH":
+                    return "4";
+                case "PB":
+                    return "5";
+                case "SPB":
+                    return "6";
+                case "RS":
+                    return "7";
+                case "AB":
+                    return "8";
+                case "SF":
+                    return "9";
+                case "FF":
+                    return "10";
+                case "SB":
+                    return "11";
+                default:
+                    return null;
+            }
         }
     }
 }
