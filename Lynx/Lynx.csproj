@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CloudinaryDotNet" Version="1.1.0-rc1" />
     <PackageReference Include="CoreCompat.System.Drawing" Version="1.0.0-beta006" />
     <PackageReference Include="Discord.Net" Version="2.0.0-alpha-build-00838" />
     <PackageReference Include="Discord.Net.Commands" Version="2.0.0-alpha-build-00838" />
