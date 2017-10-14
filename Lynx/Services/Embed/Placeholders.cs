@@ -10,6 +10,7 @@ namespace Lynx.Services.Embed
         {
             StringBuilder sb = new StringBuilder(Input);
             sb.Replace("%usermention%", User.Mention);
+            sb.Replace("%user%", User.Mention);
             sb.Replace("%username%", User.Username);
             sb.Replace("%useravatar%", User.GetAvatarUrl());
             sb.Replace("%servername%", (User as SocketGuildUser).Guild.Name);
