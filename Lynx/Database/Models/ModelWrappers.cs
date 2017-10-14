@@ -97,9 +97,20 @@ namespace Lynx.Database
         public int NeededKarma { get; set; } = 1000;
         public int Credits { get; set; }
         public DateTime LastCredit { get; set; }
+        public Backgrounds Backgrounds { get; set; } = new Backgrounds();
+    }
+    public class Backgrounds
+    {
+        public List<string> Owned { get; set; } = new List<string>();
+        public List<string> NotOwned { get; set; } = new List<string>();
         public int EquippedBackground { get; set; } = 1;
         public int EquippedLevelBackground { get; set; } = 1;
-        public List<string> Backgrounds { get; set; } = new List<string>();
+    }
+    public class CloudinaryInfo
+    {
+        public string APISecret { get; set; }
+        public string APIKey { get; set; }
+        public string CloudinaryName { get; set; }
     }
 }
     // public List<string> SongList { get; set; } = new List<string>();
