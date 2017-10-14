@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Lynx.Database;
+using System.Collections.Generic;
 
 namespace Lynx.Models.Database
 {
@@ -14,5 +15,6 @@ namespace Lynx.Models.Database
         public int CommandsTriggered { get; set; }
         public List<string> BotGames { get; set; } = new List<string>();
         public List<string> EvalImports { get; set; } = new List<string>();
+        public CloudinaryInfo Cloudinary { get; set; } = new CloudinaryInfo();
     }
 }
