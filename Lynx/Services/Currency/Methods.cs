@@ -22,7 +22,18 @@ namespace Lynx.Services.Currency
         {
             var User_ = User as SocketGuildUser;
             var Config = GuildConfig.LoadAsync(User_.Guild.Id);
-            Config.Currency.UsersList.TryAdd(User.Id.ToString(), new UserWrapper { });
+            Backgrounds BCS = new Backgrounds();
+            BCS.Owned.Add("1");
+            BCS.NotOwned.Add("2");
+            BCS.NotOwned.Add("3");
+            BCS.NotOwned.Add("4");
+            BCS.NotOwned.Add("5");
+            BCS.NotOwned.Add("6");          
+            UserWrapper toAdd = new UserWrapper
+            {
+                Backgrounds = BCS
+            };
+            Config.Currency.UsersList.TryAdd(User.Id.ToString(), toAdd);
             await GuildConfig.SaveAsync(Config, User_.Guild.Id);
 
         }
@@ -187,7 +198,6 @@ namespace Lynx.Services.Currency
                     graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
                 }
             }
-
             return destImage;
         }
         public static string GetBackground(this SocketUser User, Background Background)
@@ -196,7 +206,7 @@ namespace Lynx.Services.Currency
             switch (Background)
             {
                 case Background.Level:
-                    switch (Config.Currency.UsersList[User.Id.ToString()].EquippedLevelBackground)
+                    switch (Config.Currency.UsersList[User.Id.ToString()].Backgrounds.EquippedLevelBackground)
                     {
                         case 1:
                             return "Data/Images/LevelUPBackgrounds/SpaceUp.png";
@@ -210,7 +220,7 @@ namespace Lynx.Services.Currency
                             return "Data/Images/LevelUPBackgrounds/SpaceUp.png";
                     }
                 case Background.Profile:
-                    switch (Config.Currency.UsersList[User.Id.ToString()].EquippedBackground)
+                    switch (Config.Currency.UsersList[User.Id.ToString()].Backgrounds.EquippedBackground)
                     {
                         case 1:
                             return "Data/Images/ProfileBackgrounds/DefaultBackground.png";
@@ -224,8 +234,18 @@ namespace Lynx.Services.Currency
                             return "Data/Images/ProfileBackgrounds/PatternBackground.png";
                         case 6:
                             return "Data/Images/ProfileBackgrounds/SpaceBackground.png";
+                        case 7:
+                            return "Data/Images/ProfileBackgrounds/RedSkyBackground.png";
+                        case 8:
+                            return "Data/Images/ProfileBackgrounds/AbstractBackground.png";
+                        case 9:
+                            return "Data/Images/ProfileBackgrounds/SunnyForestBackground.png";
+                        case 10:
+                            return "Data/Images/ProfileBackgrounds/FlowerFieldBackground.png";
+                        case 11:
+                            return "Data/Images/ProfileBackgrounds/StairsBackground.png";
                         default:
-                            return "Data/Images/LevelUPBackgrounds/DefaultBackground.png";
+                            return "Data/Images/ProfileBackgrounds/DefaultBackground.png";
                     }
                 default:
                     return null;
