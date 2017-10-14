@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Lynx.Services.Embed;
+using Discord;
 
 namespace Lynx.Handler
 {
@@ -18,7 +20,7 @@ namespace Lynx.Handler
                 if (Message.Author.IsBot)
                     return;
                 CustomReactionWrapper Reaction = GetReaction(Message);
-                await Message.Channel.SendMessageAsync(Reaction.Response);
+                await Message.Channel.SendMessageAsync(Placeholders.GetPlaceholder(Reaction.Response, Message.Author as IUser));
             });
             return Task.CompletedTask;
         }
