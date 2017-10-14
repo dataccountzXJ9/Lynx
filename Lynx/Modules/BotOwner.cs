@@ -7,13 +7,16 @@ using Lynx.Models.Database;
 using Lynx.Services.Embed;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using static NSFWModels;
 
 namespace Lynx.Modules
 {
@@ -21,12 +24,44 @@ namespace Lynx.Modules
     public class BotOwner : LynxBase<LynxContext>
     {
         static LynxConfig LynxConfig = new LynxConfig();
+        static GuildConfig GuildConfig = new GuildConfig();
         MemoryStream GenerateStreamFromString(string value)
         {
             return new MemoryStream(Encoding.Unicode.GetBytes(value ?? ""));
         }
         IEnumerable<Assembly> Assemblies => GetAssemblies();
         IEnumerable<string> Imports => Context.LynxConfig.EvalImports;
+        [Command("agbg")]
+        public async Task AGBG(string BG)
+        {
+            var Client = Context.Client as DiscordSocketClient;
+            foreach(var Guild in Client.Guilds)
+            {
+                var Config = GuildConfig.LoadAsync(Guild.Id);
+                foreach(var user in Config.Currency.UsersList)
+                {
+                    user.Value.Backgrounds.NotOwned.Add(BG);
+                }
+                await GuildConfig.SaveAsync(Config, Guild.Id);
+            }
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithDescription($"Succesfully added Background `{BG}` to all users across {Client.Guilds.Count} servers.").Build());
+        }
+        [Command("rgbg")]
+        public async Task RGBG(string BG)
+        {
+            
+            var Client = Context.Client as DiscordSocketClient;
+            foreach (var Guild in Client.Guilds)
+            {
+                var Config = GuildConfig.LoadAsync(Guild.Id);
+                foreach (var user in Config.Currency.UsersList)
+                {
+                    user.Value.Backgrounds.NotOwned.Remove(BG);
+                }
+                await GuildConfig.SaveAsync(Config, Guild.Id);
+            }
+            await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithDescription($"Succesfully added Background `{BG}` to all users across {Client.Guilds.Count} servers.").Build());
+        }
         [Command("addgame"), Alias("agame")]
         public async Task AddPlayingGame([Remainder] string Gamename)
         {
@@ -49,7 +84,7 @@ namespace Lynx.Modules
             using (var stream = new FileStream(Path, FileMode.Open))
             {
                 await Context.Client.CurrentUser.ModifyAsync(x
-                    => x.Avatar = new Image(stream));
+                    => x.Avatar = new Discord.Image(stream));
                 stream.Dispose();
             }
             await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription("Avatar has been updated.").Build());
