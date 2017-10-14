@@ -539,7 +539,14 @@ namespace Lynx.Modules
             foreach (var User in toFetchFrom)
             {
                 var User_ = await Guild.GetUserAsync(Convert.ToUInt64(User.Key)) as IUser;
-                Embed.AddField(x => { x.Name = @"\🏆" + $" {Rank++}. {User_.Username}"; x.Value = $"**Level:** {User.Value.Level} || **Total Karma:** {User.Value.TotalKarma}"; });
+                if (User_ == null)
+                {
+                    Embed.AddField(x => { x.Name = @"\🏆" + $" {Rank++}. {User.Key} - [STATE_USER_LEFT] "; x.Value = $"**Level:** {User.Value.Level} || **Total Karma:** {User.Value.TotalKarma}"; });
+                }
+                else
+                {
+                    Embed.AddField(x => { x.Name = @"\🏆" + $" {Rank++}. {User_.Username}"; x.Value = $"**Level:** {User.Value.Level} || **Total Karma:** {User.Value.TotalKarma}"; });
+                }
             }
             await Context.Channel.SendMessageAsync("", embed: Embed.WithTitle($"Leaderboard for {Context.Guild.Name}").WithDescription($"Currently showing Top {Rank-1}\n\n\n").WithThumbnailUrl(Context.Guild.IconUrl).WithFooter(x=> { x.Text = Context.Guild.Name + " leaderboard";
                 x.IconUrl = Context.Guild.IconUrl;
