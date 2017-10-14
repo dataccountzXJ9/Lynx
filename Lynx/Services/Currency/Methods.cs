@@ -28,7 +28,12 @@ namespace Lynx.Services.Currency
             BCS.NotOwned.Add("3");
             BCS.NotOwned.Add("4");
             BCS.NotOwned.Add("5");
-            BCS.NotOwned.Add("6");          
+            BCS.NotOwned.Add("6");
+            BCS.NotOwned.Add("7");
+            BCS.NotOwned.Add("8");
+            BCS.NotOwned.Add("9");
+            BCS.NotOwned.Add("10");
+            BCS.NotOwned.Add("11");
             UserWrapper toAdd = new UserWrapper
             {
                 Backgrounds = BCS

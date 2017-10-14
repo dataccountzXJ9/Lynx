@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Lynx.Services.Currency;
 using NLog;
-
+using Octokit;
 namespace Lynx.Handler
 {
     public class EventsHandler

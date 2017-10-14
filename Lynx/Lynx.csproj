@@ -24,6 +24,7 @@
     <PackageReference Include="Microsoft.NETCore.Portable.Compatibility" Version="1.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="NLog" Version="5.0.0-beta11" />
+    <PackageReference Include="Octokit" Version="0.27.0" />
     <PackageReference Include="RavenDB.Client" Version="4.0.0-rc-40019" />
   </ItemGroup>
 

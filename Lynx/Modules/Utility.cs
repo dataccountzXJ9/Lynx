@@ -70,14 +70,14 @@ namespace Lynx.Modules
             {
                 x.Name = $"Hey im {Context.Client.CurrentUser.Username}";
                 x.IconUrl = Context.Client.CurrentUser.GetAvatarUrl();
-            }).WithDescription("I'm a multifunctional discord bot for useful things. Please check out my [documentation](https://www.lynxbot.cf/documentation)!\n" +
+            }).WithDescription("I'm a multifunctional discord bot for useful things. Please check out my [documentation](https://lynxbot.cf/documentation.html)!\n" +
             "[My GitHub repostory](https://github.com/dataccountzXJ9/Lynx)")
             
             .AddField(x =>
             {
                 x.IsInline = true;
                 x.Name = "Info";
-                x.Value = $"<:developer:337976213584871434> **Developer:** `{Info.Owner}`\n<:www:337978348854575105> **Website:** [lynxbot.cf](https://www.lynxbot.cf)\n" +
+                x.Value = $"<:developer:337976213584871434> **Developer:** `{Info.Owner}`\n<:www:337978348854575105> **Website:** [lynxbot.cf](https://lynxbot.cf)\n" +
             $"<:ramusage:338007753794650113> **Ram Usage:** {GetHeapSize()} MB\n" +
             $"<:uptime:338009832944566274> **Uptime:** {GetUptime()}\n" +
             $"<:envelop:338011365476401173> **Messages Received:** {Config.MessagesReceived}\n"+

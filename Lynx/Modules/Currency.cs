@@ -455,8 +455,8 @@ namespace Lynx.Modules
                     break;
             }
         }
-        [RequireUserPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
-        [RequireBotPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireBotPermission(GuildPermission.ManageGuild)]
         [Command("blacklist"),Alias("bl", "blist")]
         public async Task BlackListChannelAsync(ITextChannel Channel = null)
         {
@@ -471,8 +471,8 @@ namespace Lynx.Modules
             }).Build());
             await GuildConfig.SaveAsync(Config, Context.Guild.Id);
         }
-        [RequireUserPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
-        [RequireBotPermission(GuildPermission.ManageGuild | GuildPermission.SendMessages)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireBotPermission(GuildPermission.ManageGuild)]
         [Command("whitelist"), Alias("wl", "wlist")]
         public async Task WhiteListAsync(ITextChannel Channel = null)
         {
