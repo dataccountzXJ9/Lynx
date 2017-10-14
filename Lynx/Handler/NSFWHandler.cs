@@ -59,41 +59,48 @@ namespace NSFW
 
         public static string ClarifaiTagging(string url)
         {
-            const string CLARIFAI_API_URL = "https://api.clarifai.com/v2/models/e9576d86d2004ed1a38ba0cf39ecb4b1/outputs";
-
-            using (HttpClient client = new HttpClient())
+            try
             {
-                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + LynxConfig.LoadConfig.ClarifaiAPIKey);
+                const string CLARIFAI_API_URL = "https://api.clarifai.com/v2/models/e9576d86d2004ed1a38ba0cf39ecb4b1/outputs";
 
-                HttpContent json = new StringContent(
-                    "{" +
-                        "\"inputs\": [" +
-                            "{" +
-                                "\"data\": {" +
-                                    "\"image\": {" +
-                                        "\"url\": \"" + url + "\"" +
-                                    "}" +
-                               "}" +
-                            "}" +
-                        "]" +
-                    "}", Encoding.UTF8, "application/json");
-
-                var response = client.PostAsync(CLARIFAI_API_URL, json).Result;
-
-                if (!response.IsSuccessStatusCode)
+                using (HttpClient client = new HttpClient())
                 {
-                    return null;
+                    client.DefaultRequestHeaders.Add("Authorization", "Key " + LynxConfig.LoadConfig.ClarifaiAPIKey);
+
+                    HttpContent json = new StringContent(
+                        "{" +
+                            "\"inputs\": [" +
+                                "{" +
+                                    "\"data\": {" +
+                                        "\"image\": {" +
+                                            "\"url\": \"" + url + "\"" +
+                                        "}" +
+                                   "}" +
+                                "}" +
+                            "]" +
+                        "}", Encoding.UTF8, "application/json");
+
+                    var response = client.PostAsync(CLARIFAI_API_URL, json).Result;
+                    if (!response.IsSuccessStatusCode)
+                    {
+                       return null;
+                    }
+
+                    string jsonX = response.Content.ReadAsStringAsync().Result.ToString();
+                    NSFWModel model = JsonConvert.DeserializeObject<NSFWModel>(jsonX);
+
+                    var nsfwval = model.outputs.FirstOrDefault().data.concepts.Find(t => t.name == "nsfw").value;
+                    if (nsfwval > 0.85)
+                    {
+                        return "nsfw";
+                    }
+
+                    return "sfw";
                 }
-
-                string jsonX = response.Content.ReadAsStringAsync().Result.ToString();
-                NSFWModel model = JsonConvert.DeserializeObject<NSFWModel>(jsonX);
-
-                var nsfwval = model.outputs.FirstOrDefault().data.concepts.Find(t => t.name == "nsfw").value;
-                if (nsfwval > 0.85)
-                {
-                    return "nsfw";
-                }
-
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e);
                 return "sfw";
             }
         }
