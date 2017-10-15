@@ -9,10 +9,9 @@ using Lynx.Database;
 using Lynx.Handler;
 using Discord.WebSocket;
 using Lynx.Interactive;
-
 namespace Lynx
 {
-    public class LynxBase<T> : ModuleBase<LynxContext> where T: LynxContext
+    public class LynxBase<T> : ModuleBase<LynxContext> where T : LynxContext
     {
         public static IServiceProvider Provider { get; set; }
         protected override async Task<IUserMessage> ReplyAsync(string message, bool isTTS = false, Embed embed = null, RequestOptions options = null)
@@ -47,6 +46,5 @@ namespace Lynx
         public Task<IUserMessage> PagedReplyAsync(PaginatedMessage pager, ICriterion<SocketReaction> criterion)
             => Interactive.SendPaginatedMessageAsync(Context, pager, criterion);
 
-        public RuntimeResult Ok(string reason = null) => new OkResult(reason);
     }
 }

@@ -6,7 +6,6 @@ using Lynx.Handler;
 using Lynx.Interactive;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
-using NSFW;
 using System.Threading.Tasks;
 namespace Lynx
 {
