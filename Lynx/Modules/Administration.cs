@@ -22,6 +22,67 @@ namespace Lynx.Modules
         {
             Timeout = TimeSpan.FromMinutes(60)
         };
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireBotPermission(GuildPermission.Administrator)]
+        [Command("createcolors")]
+        public async Task Create80ColorsAsync(string Y = null)
+        {
+            var Config = Context.Config;
+            var msgToModify = await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"{Context.User.Mention}, are you sure you want to create 81 colors? (Y/n)").WithImageUrl("https://cdn.discordapp.com/attachments/369113128417624066/369127291604697089/unknown.png").Build());
+            var Next = await NextMessageAsync();
+            int i = 0;
+            if (Next.Content == "y" || Next.Content == "Y" || Next.Content == "Yes" || Next.Content == "yes")
+            {
+                await Next.DeleteAsync();
+                await msgToModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription($"{Context.User.Mention}, are you sure you want to create 81 colors?: Yes\n{Context.User.Mention}, do you want to add 81 colors to the guilds selfassignable role list? (Y/n)").WithImageUrl("https://cdn.discordapp.com/attachments/369113128417624066/369127291604697089/unknown.png").Build());
+                var Next_ = await NextMessageAsync();
+                string Answer = null;
+                if (Next_.Content == "y" || Next_.Content == "Y" || Next_.Content == "Yes" || Next_.Content == "yes")
+                {
+                    Answer = "Yes";
+                    await msgToModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription($"{Context.User.Mention}, are you sure you want to create 81 colors?: Yes\n{Context.User.Mention}, do you want to add 81 colors to the guilds selfassignable role list?: Yes").WithImageUrl("https://cdn.discordapp.com/attachments/369113128417624066/369127291604697089/unknown.png").Build());
+                }
+                else
+                {
+                    await msgToModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithDescription($"{Context.User.Mention}, are you sure you want to create 81 colors?: Yes\n{Context.User.Mention}, do you want to add 81 colors to the guilds selfassignable role list?: No").WithImageUrl("https://cdn.discordapp.com/attachments/369113128417624066/369127291604697089/unknown.png").Build());
+                    Answer = "No";
+                }
+                string[] toCreate = new string[] {"FFFFFF", "000000", "333333", "666666", "999999", "CCCCCC", "CCCC99", "9999CC", "666699", "660000", "663300", "996633", "003300", "003333", "003399", "000066", "330066", "660066", "990000", "993300", "CC9900", "006600", "336666", "0033FF",
+                "000099", "660099", "990066", "CC0000","CC3300", "FFCC00", "009900", "006666", "0066FF", "0000CC", "663399", "CC0099", "FF0000", "FF3300", "FFFF00", "00CC00", "009999", "0099FF", "0000FF", "9900CC", "FF0099", "CC3333", "FF6600", "FFFF33", "00FF00","00CCCC", "00CCFF", "3366FF", "9933FF",
+                "FF00FF", "FF6666", "FF6633", "FFFF66", "66FF66", "66CCCC", "00FFFF", "3399FF", "9966FF", "FF66FF", "FF9999", "FF9966", "FFFF99", "99FF99",
+                "66FFCC", "99FFFF", "66CCFF", "9999FF", "FF99FF", "FFCCCC", "FFCC99", "FFFFCC", "CCFFCC", "99FFCC", "CCFFFF", "99CCFF", "CCCCFF", "FFCCFF"  };
+                foreach (var X in toCreate)
+                {
+                    var role = Context.Guild.Roles.FirstOrDefault(r => r.Name.ToUpperInvariant() == X);
+                    if (role != null)
+                    {
+                        i++;
+                        continue;
+                    }
+                    else
+                    {
+                        var rgb = X.Length == 4;
+                        var arg1 = X.Replace("#", "");
+                        var red = Convert.ToByte(rgb ? int.Parse(arg1) : Convert.ToInt32(arg1.Substring(0, 2), 16));
+                        var green = Convert.ToByte(rgb ? int.Parse(toCreate[2]) : Convert.ToInt32(arg1.Substring(2, 2), 16));
+                        var blue = Convert.ToByte(rgb ? int.Parse(toCreate[3]) : Convert.ToInt32(arg1.Substring(4, 2), 16));
+                        var toModify = await Context.Guild.CreateRoleAsync(X);
+                        await toModify.ModifyAsync(x => x.Color = new Color(red, green, blue));
+                        if (Answer == "Yes")
+                            Config.Moderation.AssignableRoles.Add(toModify.Id.ToString());
+                        else
+                            continue;
+                    }
+                }
+                await GuildConfig.SaveAsync(Config, Context.Guild.Id);
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"Created {81 - i} color roles, skipped {i}").Build()); ; ; ; ; ; ;
+            }
+
+            else
+            {
+                return;
+            }
+        }
         [Command("iam")]
         public async Task IAmAsync([Remainder] IRole Role)
         {
