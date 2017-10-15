@@ -10,10 +10,13 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using Lynx.Database;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Lynx.Handler
 {
-    public class CommandHandler
+    public class CommandHandler : LynxBase<LynxContext>
     {
         DiscordSocketClient Client;
         IServiceProvider provider;
