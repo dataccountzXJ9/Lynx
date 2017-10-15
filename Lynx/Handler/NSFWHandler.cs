@@ -83,7 +83,8 @@ namespace NSFW
                     var response = client.PostAsync(CLARIFAI_API_URL, json).Result;
                     if (!response.IsSuccessStatusCode)
                     {
-                       return null;
+                        Console.WriteLine(response.StatusCode);
+                        return null;
                     }
 
                     string jsonX = response.Content.ReadAsStringAsync().Result.ToString();
@@ -107,6 +108,7 @@ namespace NSFW
 
         private static async Task<bool> NSFWFiltered(IGuild guild, SocketUserMessage usrMsg)
         {
+            if ((usrMsg.Author.IsBot)) return false;
                 if ((usrMsg.Channel as SocketTextChannel).IsNsfw) return false;
                 var Guild = (usrMsg.Channel as SocketTextChannel).Guild;
                 var Config = GuildConfig.LoadAsync(Guild.Id);
