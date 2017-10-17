@@ -15,16 +15,73 @@ namespace Lynx.Modules
     public class Currency : LynxBase<LynxContext>
     {
         static GuildConfig GuildConfig = new GuildConfig();
+        [Command("flip")]
+        public async Task FlipACoinAsync(string Side = null, int bet = 50)
+        {
+            if (bet > 100)
+                bet = 100;
+            var Credits = Context.Config.Currency.UsersList[Context.User.Id.ToString()];
+            if (Context.Config.Currency.UsersList[Context.User.Id.ToString()].Credits < bet || Context.Config.Currency.UsersList[Context.User.Id.ToString()].Credits <= 0)
+            {
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription("You do not have enough credits.").Build());
+                return;
+            }
+            if (bet <= 0)
+            {
+                await ReplyAsync("Bet can't be lower than 0! Default bet is set to 50!");
+                return;
+            }
+            if (Side == null)
+            {
+                await ReplyAndDeleteAsync("You must choose Tails or Heads.");
+                return;
+            }
+            var Sides = new string[] { "https://cdn.discordapp.com/attachments/337333032342257665/369841081908592640/Afbeelding1.png", "https://cdn.discordapp.com/attachments/337333032342257665/369841831732838410/Afbeelding2.png" };
+            var GetSide = Sides[new Random().Next(0, Sides.Length)];
+            if (Side.ToLower() == "tails" && GetSide == Sides[0])
+            {
+                await Context.User.AwardCredits(bet);
+                await ReplyAsync("", embed: new EmbedBuilder().WithImageUrl(GetSide).WithSuccesColor().WithDescription($"You __won__ {bet} credits. [💰 {Credits.Credits} => 💰 {Credits.Credits + bet}](-)").WithFooter(x => x.Text = "Tails").Build());
+            }
+            else if (Side.ToLower() == "tails" && GetSide != Sides[0])
+            {
+                await Context.User.TakeCredits(bet);
+                await ReplyAsync("", embed: new EmbedBuilder().WithImageUrl(GetSide).WithFailedColor().WithDescription($"You __lost__ {bet} credits. [💰 {Credits.Credits} => 💰 {Credits.Credits - bet}](-)").WithFooter(x => x.Text = "Tails").Build());
+            }
+            else if (Side.ToLower() == "heads" && GetSide == Sides[1])
+            {
+                await Context.User.AwardCredits(bet);
+                await ReplyAsync("", embed: new EmbedBuilder().WithImageUrl(GetSide).WithSuccesColor().WithDescription($"You __won__ {bet} credits. [💰 {Credits.Credits} => 💰 {Credits.Credits + bet}](-)").WithFooter(x => x.Text = "Heads").Build());
+            }
+            else if (Side.ToLower() == "heads" && GetSide != Sides[1])
+            {
+                await Context.User.TakeCredits(bet);
+                await ReplyAsync("", embed: new EmbedBuilder().WithImageUrl(GetSide).WithFailedColor().WithDescription($"You __lost__ {bet} credits. [💰 {Credits.Credits} => 💰 {Credits.Credits - bet}](-)").WithFooter(x => x.Text = "Heads").Build());
+            }
+        }
         [Command("cup", RunMode = RunMode.Async)]
         public async Task CupGame(int bet = 25)
         {
-
+            if (bet > 100)
+                bet = 100;
+            var Config = Context.Config;
+            var Credits = Config.Currency.UsersList[Context.User.Id.ToString()];
+            if (Credits.Credits < bet || Credits.Credits <= 0)
+            {
+                await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithFailedColor().WithDescription("You do not have enough credits.").Build());
+                return;
+            }
+            if (bet <= 0)
+            {
+                await ReplyAsync("Bet can't be lower than 0! Default bet is set to 100!");
+                return;
+            }
             string[] ImagePaths = new[] { "https://cdn.discordapp.com/attachments/337325360087695368/367397031880425482/unknown.png", "https://cdn.discordapp.com/attachments/337325360087695368/367396700782067713/unknown.png",
                 "https://cdn.discordapp.com/attachments/337325360087695368/367396204432195607/unknown.png", "https://cdn.discordapp.com/attachments/337325360087695368/367395077125046274/unknown.png", "https://cdn.discordapp.com/attachments/337325360087695368/367395557406146582/unknown.png" };
             var RNGPath = new Random().Next(1, ImagePaths.Length);
             var FinalCup = ImagePaths[RNGPath];
             var PlusOne = RNGPath + 1;
-            var toModify = await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"{Context.User.Mention}, guess under which cup the golden coin is. [NO REWARDS ATM]").WithImageUrl("https://cdn.discordapp.com/attachments/337325360087695368/367400517107974145/unknown.png").Build());
+            var toModify = await Context.Channel.SendMessageAsync("", embed: new EmbedBuilder().WithSuccesColor().WithDescription($"{Context.User.Mention}, guess under which cup the golden coin is.").WithImageUrl("https://cdn.discordapp.com/attachments/337325360087695368/367400517107974145/unknown.png").Build());
             var Message = await NextMessageAsync();
             if (Message != null)
             {
@@ -33,51 +90,61 @@ namespace Lynx.Modules
                     case "1":
                         if(Convert.ToInt16(Message.Content) ==PlusOne)
                         {
-                            await toModify.ModifyAsync(x=>x.Embed = new EmbedBuilder().WithSuccesColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you guessed right!").Build());
+                            await Context.User.AwardCredits(bet);
+                            await toModify.ModifyAsync(x=>x.Embed = new EmbedBuilder().WithSuccesColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you guessed right and won **{bet}** credits. [💰 {Credits.Credits} => 💰 {Credits.Credits + bet}](-)").Build());
                         }
                         else
                         {
-                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithFailedColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you did not guess right.").Build());
+                            await Context.User.TakeCredits(bet);
+                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithFailedColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you did not guess right and lost **{bet}** credits. [💰 {Credits.Credits} => 💰 {Credits.Credits - bet}](-)").Build());
                         }
                         break;
                     case "2":
                         if (Convert.ToInt16(Message.Content) == PlusOne)
                         {
-                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you guessed right!").Build());
+                            await Context.User.AwardCredits(bet);
+                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you guessed right and won **{bet}** credits. [💰 {Credits.Credits} => 💰 {Credits.Credits + bet}](-)").Build());
                         }
                         else
                         {
-                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithFailedColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you did not guess right.").Build());
+                            await Context.User.TakeCredits(bet);
+                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithFailedColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you did not guess right and lost **{bet}** credits").Build());
                         }
                         break;
                     case "3":
                         if (Convert.ToInt16(Message.Content) == PlusOne)
                         {
-                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you guessed right!").Build());
+                            await Context.User.AwardCredits(bet);
+                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you guessed right and won **{bet}** credits. [💰 {Credits.Credits} => 💰 {Credits.Credits + bet}](-)").Build());
                         }
                         else
                         {
-                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithFailedColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you did not guess right.").Build());
+                            await Context.User.TakeCredits(bet);
+                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithFailedColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you did not guess right and lost **{bet}** credits. [💰 {Credits.Credits} => 💰 {Credits.Credits - bet}](-)").Build());
                         }
                         break;
                     case "4":
                         if (Convert.ToInt16(Message.Content) == PlusOne)
                         {
-                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you guessed right!").Build());
+                            await Context.User.AwardCurrency(Context.Channel, bet);
+                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you guessed right and won **{bet}** credits. [💰 {Credits.Credits} => 💰 {Credits.Credits + bet}](-)").Build());
                         }
                         else
                         {
-                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithFailedColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you did not guess right.").Build());
+                            await Context.User.TakeCredits(bet);
+                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithFailedColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you did not guess right and lost **{bet}** credits. [💰 {Credits.Credits} => 💰 {Credits.Credits - bet}](-)").Build());
                         }
                         break;
                     case "5":
                         if (Convert.ToInt16(Message.Content) == PlusOne)
                         {
-                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you guessed right!").Build());
+                            await Context.User.TakeCredits(bet);
+                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithFailedColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you did not guess right and lost **{bet}** credits. [💰 {Credits.Credits} => 💰 {Credits.Credits - bet}](-)").Build());
                         }
                         else
                         {
-                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithFailedColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you did not guess right.").Build());
+                            await Context.User.AwardCredits(bet);
+                            await toModify.ModifyAsync(x => x.Embed = new EmbedBuilder().WithSuccesColor().WithImageUrl(FinalCup).WithDescription($"{Context.User.Mention}, you guessed right and won **{bet}** credits. [💰 {Credits.Credits} => 💰 {Credits.Credits + bet}](-)").Build());
                         }
                         break;
                 }

@@ -95,13 +95,21 @@ namespace Lynx.Services.Currency
             }
            await GuildConfig.SaveAsync(Config, User_.Guild.Id);
         }
-        public static async Task TakeCurrency(this SocketUser User, int Amount)
+        public static async Task TakeCredits(this SocketUser User, int Amount)
         {
             var User_ = User as SocketGuildUser;
             var Config = GuildConfig.LoadAsync(User_.Guild.Id);
             Config.Currency.UsersList.TryGetValue(User.Id.ToString(), out UserWrapper Profile);
-            Profile.Karma -= Amount;
-            Profile.TotalKarma -= Amount;
+            Profile.Credits -= Amount;
+            Config.Currency.UsersList.AddOrUpdate(User.Id.ToString(), Profile, (str, amnt) => Profile);
+            await GuildConfig.SaveAsync(Config, User_.Guild.Id);
+        }
+        public static async Task AwardCredits(this SocketUser User, int Amount)
+        {
+            var User_ = User as SocketGuildUser;
+            var Config = GuildConfig.LoadAsync(User_.Guild.Id);
+            Config.Currency.UsersList.TryGetValue(User.Id.ToString(), out UserWrapper Profile);
+            Profile.Credits += Amount;
             Config.Currency.UsersList.AddOrUpdate(User.Id.ToString(), Profile, (str, amnt) => Profile);
             await GuildConfig.SaveAsync(Config, User_.Guild.Id);
         }

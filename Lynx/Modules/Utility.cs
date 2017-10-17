@@ -71,7 +71,7 @@ namespace Lynx.Modules
                 x.Name = $"Hey im {Context.Client.CurrentUser.Username}";
                 x.IconUrl = Context.Client.CurrentUser.GetAvatarUrl();
             }).WithDescription("I'm a multifunctional discord bot for useful things. Please check out my [documentation](https://lynxbot.cf/documentation.html)!\n" +
-            "[My GitHub repostory](https://github.com/dataccountzXJ9/Lynx)")
+            "[My GitHub repostory](https://github.com/dataccountzXJ9/Lynx), dont forget to leave ⭐!")
             
             .AddField(x =>
             {
